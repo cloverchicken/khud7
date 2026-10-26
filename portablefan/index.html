@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Easy Table Fan — Mô phỏng &amp; Sơ đồ mạch điện</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#fffbeb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--sky:#0284c7;--amber:#f59e0b;--radius:18px}
+body{font-family:"Be Vietnam Pro",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#fefce8,#fff7ed);color:var(--ink);line-height:1.6}
+.wrap{max-width:1140px;margin:0 auto;padding:0 18px}
+header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;flex-wrap:wrap}
+.logo{display:flex;gap:10px;align-items:center}
+.logo-badge{width:44px;height:44px;border-radius:12px;background:#a3e635;display:grid;place-items:center;font-size:24px}
+.logo b{font-size:16px;line-height:1.15}.logo span{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 10px}
+.tab-btn{border:2px solid #65a30d;background:#65a30d;color:#fff;padding:9px 12px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer}
+.tab-btn:hover{background:#558a0b;border-color:#558a0b}
+.tab-btn.active{background:#3f6212;border-color:#3f6212;box-shadow:inset 0 -3px 0 #fff}
+.tab-btn.locked{opacity:.55;filter:grayscale(.45)}
+.tab-btn.locked::after{content:' 🔒'}
+.tab-btn.passed::after{content:' ✓'}
+.gate-note{margin-top:8px;font-size:13px;font-weight:700;border-radius:10px;padding:8px 10px;background:#fef9c3;border:1px solid #fde68a;color:#854d0e;line-height:1.55}
+.gate-note.open{background:#dcfce7;border-color:#86efac;color:#14532d}
+#gateToast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,16px);background:#0f172a;color:#fff;font-size:13.5px;font-weight:700;padding:11px 16px;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.35);opacity:0;pointer-events:none;transition:all .25s ease;z-index:60;max-width:92vw;text-align:center}
+#gateToast.show{opacity:1;transform:translate(-50%,0)}
+main{padding:18px 0 30px}
+.tab-panel{display:none}.tab-panel.active{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 6px 24px rgba(15,23,42,.06);margin-bottom:14px}
+h3{font-size:16px}
+.badge{font-size:12px;font-weight:800;padding:5px 9px;border-radius:999px}
+.badge.on{background:#dcfce7;color:#166534}.badge.off{background:#fee2e2;color:#991b1b}
+.badge.neutral{background:#f1f5f9;color:#334155}
+.note{font-size:13px;color:var(--muted)}
+.btn{border:0;cursor:pointer;padding:10px 14px;border-radius:999px;font-weight:700;font-size:14px}
+.btn-primary{background:#65a30d;color:#fff}.btn-ghost{background:#f1f5f9;color:#334155}
+.tab-nav{display:flex;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap}
+.callout{background:#fff7ed;border:1px solid #fed7aa;border-left:5px solid var(--amber);padding:12px 14px;border-radius:14px;font-size:14px;margin-top:12px}
+.good{background:#ecfdf5;border:1px solid #a7f3d0;border-left:5px solid #16a34a;border-radius:14px;padding:12px 14px;font-size:14px;margin-top:12px}
+.offbox{background:#fef2f2;border:1px solid #fecaca;border-left:5px solid #dc2626;border-radius:14px;padding:12px 14px;font-size:14px;margin-top:12px}
+.warnbox{background:#fefce8;border:1px solid #fde68a;border-left:5px solid #f59e0b;border-radius:14px;padding:12px 14px;font-size:14px;margin-top:12px}
+/* Stage / simulation */
+.stage{background:linear-gradient(180deg,#fef3c7 0 62%,#fde68a 62% 100%);border-radius:18px;padding:16px;position:relative;overflow:hidden;border:1px solid #fde68a}
+.stage::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(146,64,14,.06) 0 3px,transparent 3px 90px);pointer-events:none}
+.product-wrap{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;position:relative}
+.fan-left{flex:0 1 auto;margin-right:auto}
+.fan-svg-wrap{transform-origin:50% 100%;transition:transform .8s cubic-bezier(.4,0,.2,1), filter .3s;filter:drop-shadow(0 14px 18px rgba(0,0,0,.18));max-width:100%;height:auto}
+.fan-svg-wrap.shaking{animation:fanShake var(--shakeDur,.3s) linear infinite}
+.fan-svg-wrap.tipped{transform:rotate(-10deg) translateY(8px);filter:drop-shadow(0 14px 18px rgba(0,0,0,.28))}
+@keyframes fanShake{0%{transform:translate(0,0) rotate(0deg)}25%{transform:translate(var(--shakeAmp,1px),-.4px) rotate(.35deg)}50%{transform:translate(calc(var(--shakeAmp,1px)*-.8),.3px) rotate(-.3deg)}75%{transform:translate(calc(var(--shakeAmp,1px)*.6),-.3px) rotate(.25deg)}100%{transform:translate(0,0) rotate(0deg)}}
+#bladesGroup{transform-origin:200px 118px;animation-play-state:paused}
+#bladesGroup.spinning{animation:spin var(--spinDur,.5s) linear infinite;animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+#tab3WireFlow{transition:opacity .25s}
+#tab3WireFlow.wire-flow-on{animation:wireFlowAnim .7s linear infinite}
+@keyframes wireFlowAnim{to{stroke-dashoffset:-20}}
+.windbar{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:8px 0}
+.windfill{height:100%;background:linear-gradient(90deg,#a3e635,#0284c7);width:0%;transition:width .3s}
+
+/* === Controls: 3 cols === */
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:900px){.controls{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.controls{grid-template-columns:1fr}}
+.ctrl{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column}
+.ctrl label{font-size:13px;font-weight:700;display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 8px}.ctrl label span{color:var(--sky)}
+.ctrl input[type=range]{width:100%;accent-color:#65a30d;margin-top:8px}
+.switch{width:58px;height:32px;border-radius:999px;background:#cbd5e1;border:none;position:relative;cursor:pointer;flex-shrink:0;transition:opacity .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;background:#fff;border-radius:50%;transition:.2s}
+.switch.on{background:#16a34a}.switch.on::after{left:29px}
+.switch-row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+
+/* Circuit */
+.flow-line{fill:none;stroke:#facc15;stroke-width:7;stroke-linecap:round;stroke-dasharray:1 18;animation:currentMove .65s linear infinite;filter:drop-shadow(0 0 4px rgba(250,204,21,.9))}
+@keyframes currentMove{to{stroke-dashoffset:-19}}
+#switchLever{transition:transform .3s ease, stroke .3s ease;transform-origin:288px 97px}
+#switchLever.open{transform:rotate(-32deg)}
+#battKnob{transition:cx .25s ease}
+#battTrack{transition:fill .25s ease}
+.battery-switch{cursor:pointer}
+.battery-switch:hover #battTrack{stroke:#0f172a;stroke-width:1.5}
+.motor-pulse{animation:pulseGlow 1.2s ease-in-out infinite}
+#motorFan{transform-box:fill-box;transform-origin:center}
+#motorFan.spinning{animation:spin .55s linear infinite}
+#motorFan path{fill:#0284c7}
+#motorFan.stopped path{fill:#94a3b8}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.seg label{border:1.5px solid #cbd5e1;border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:700;cursor:pointer;background:#fff;display:inline-flex;gap:5px;align-items:center}
+.seg label:has(input:checked){background:#e0f2fe;border-color:#0284c7}
+.seg input{accent-color:#0284c7}
+.wind-scene{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:10px 12px}
+.wind-arrows{display:inline-flex;gap:3px;font-size:20px;font-weight:900;color:#0284c7;line-height:1;font-variant-emoji:text}
+.wind-arrows.back{color:#dc2626}
+.warrow{display:inline-block;opacity:.18}
+.warrow.flow{opacity:1;animation:flowR var(--windDur,1s) linear infinite}
+.wind-arrows.back .warrow.flow{animation-name:flowL}
+.warrow:nth-child(2){animation-delay:.12s}.warrow:nth-child(3){animation-delay:.24s}.warrow:nth-child(4){animation-delay:.36s}
+@keyframes flowR{0%{transform:translateX(-7px);opacity:0}30%{opacity:1}100%{transform:translateX(15px);opacity:0}}
+@keyframes flowL{0%{transform:translateX(7px);opacity:0}30%{opacity:1}100%{transform:translateX(-15px);opacity:0}}
+@keyframes pulseGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
+
+/* Hover zones */
+.izone{fill:rgba(163,230,53,0);stroke:transparent;stroke-width:2;cursor:pointer;pointer-events:all}
+.izone:hover{fill:rgba(163,230,53,.30);stroke:#3f6212;stroke-dasharray:6 4}
+.izone-line{fill:none;stroke:transparent;stroke-width:16;stroke-linecap:round;cursor:pointer;pointer-events:stroke}
+.izone-line:hover{stroke:rgba(163,230,53,.55)}
+.izone.selected{fill:rgba(163,230,53,.38);stroke:#3f6212;stroke-dasharray:6 4}
+.izone-line.selected{stroke:rgba(101,163,13,.65)}
+#introPartInfoPanel{flex:1 1 320px;max-width:430px;min-width:290px;background:#fff;border:2px solid #65a30d;border-radius:16px;box-shadow:0 8px 24px rgba(15,23,42,.10);padding:16px;font-size:14px;line-height:1.65;color:var(--ink)}
+#introPartInfoPanel .panel-title{font-size:12px;font-weight:800;letter-spacing:.06em;color:#3f6212;text-transform:uppercase;margin-bottom:8px}
+#introPartInfoPanel h4{font-size:17px;margin-bottom:4px;color:var(--ink);line-height:1.35}
+
+/* Quiz */
+.quiz-q{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px;background:#fff}
+.quiz-q h4{font-size:14.5px;margin-bottom:8px;line-height:1.45}
+.quiz-opts{display:grid;gap:8px}
+.quiz-opt{color:#000;border:1.5px solid #cbd5e1;border-radius:10px;padding:9px 12px;font-size:13.5px;font-weight:600;cursor:pointer;background:#fff;text-align:left;width:100%;font-family:inherit}
+.quiz-opt:hover{border-color:#65a30d}
+.quiz-opt.correct{background:#dcfce7;border-color:#16a34a}
+.quiz-opt.wrong{background:#fee2e2;border-color:#dc2626}
+.quiz-opt:disabled{cursor:default}
+.quiz-exp{display:none;margin-top:8px;font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 10px;color:#14532d;line-height:1.55}
+.quiz-exp.show{display:block}
+.tt-row{display:flex;gap:10px;margin-top:6px;align-items:flex-start}
+.tt-row>span:last-child{flex:1 1 auto;min-width:0;overflow-wrap:break-word}
+.tt-k{font-weight:800;color:#3f6212;flex:0 0 112px;line-height:1.45}
+.hover-hint{font-size:13px;font-weight:600;color:#3f6212;background:#f7fee7;border:1px dashed #84cc16;border-radius:10px;padding:8px 11px;margin-top:10px}
+
+/* === STEP LAYOUT === */
+.step-card{position:relative;padding-left:66px}
+.step-num{position:absolute;left:16px;top:16px;width:38px;height:38px;border-radius:50%;background:#65a30d;color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;box-shadow:0 2px 8px rgba(101,163,13,.35)}
+.step-card h3{margin-bottom:8px}
+
+/* === Hypothesis dropdown (Step 1) === */
+.hypo-selector-wrap{margin-top:10px}
+.hypo-selector-label{display:block;font-size:14px;font-weight:700;margin-bottom:6px;color:#3f6212}
+.hypo-select{width:100%;padding:12px 14px;font-size:14px;font-family:inherit;font-weight:600;border:2px solid #65a30d;border-radius:12px;background:#fff;cursor:pointer;color:var(--ink);transition:.15s}
+.hypo-select:hover{border-color:#3f6212;background:#f7fee7}
+.hypo-select:focus{outline:none;box-shadow:0 0 0 3px rgba(101,163,13,.2)}
+.hypo-detail{margin-top:12px;background:#f7fee7;border:2px solid #65a30d;border-radius:12px;padding:14px;animation:fade .2s}
+.hypo-detail-head{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.hypo-badge-lg{width:50px;height:50px;border-radius:12px;background:#3f6212;color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;flex-shrink:0}
+.hypo-detail-head b{font-size:15px;display:block;line-height:1.3}
+.hypo-detail-head .note{margin-top:2px}
+.hypo-guidance{background:#fff;border:1px solid #d9f99d;border-radius:10px;padding:10px 12px;font-size:13px;color:#3f6212}
+
+/* Science textarea */
+.science-textarea{width:100%;min-height:90px;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px 12px;font-family:inherit;font-size:14px;resize:vertical;line-height:1.55;color:var(--ink);background:#fff}
+.science-textarea:focus{outline:none;border-color:#65a30d;box-shadow:0 0 0 3px rgba(101,163,13,.15)}
+.prompt-line{font-size:13.5px;color:#334155;background:#f0fdf4;border-left:4px solid #65a30d;border-radius:8px;padding:8px 12px;margin:8px 0}
+
+/* Experiment layout */
+.experiment-layout{display:grid;grid-template-columns:5fr 6fr;gap:16px;margin-top:10px;align-items:start}
+@media (max-width:900px){.experiment-layout{grid-template-columns:1fr}}
+.fan-col{display:flex;flex-direction:column;gap:12px}
+.fan-col .fan-svg-wrap{width:100%;max-width:300px;align-self:center}
+.windbox-side{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.log-col{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;min-height:400px}
+.exp-log-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.exp-log-header h4{font-size:13.5px}
+.exp-log-btns{display:flex;gap:6px;flex-wrap:wrap}
+.exp-log-btns button{border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink);font-family:inherit;transition:.15s}
+.exp-log-btns button:hover{border-color:#65a30d;background:#f7fee7}
+.exp-log-btns button:disabled{opacity:.4;cursor:not-allowed}
+.exp-log-btns button.primary{background:#65a30d;color:#fff;border-color:#65a30d}
+.exp-log-btns button.primary:hover{background:#558a0b}
+.log-table-wrap{flex:1;overflow:auto;max-height:520px;border:1px solid #e2e8f0;border-radius:10px}
+.exp-log{width:100%;border-collapse:collapse;font-size:12.5px}
+.exp-log th,.exp-log td{padding:6px 8px;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}
+.exp-log th{background:#f8fafc;font-weight:700;color:#334155;position:sticky;top:0;z-index:1}
+.exp-log tr:hover td{background:#f0fdf4}
+.exp-log td.tipped{background:#fee2e2;color:#991b1b;font-weight:800}
+.current-params-strip{display:flex;flex-wrap:wrap;gap:6px;background:#f7fee7;border:1px solid #d9f99d;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:600;margin-bottom:10px;align-items:center}
+.current-params-strip span{background:#fff;border-radius:6px;padding:2px 8px;border:1px solid #e2e8f0}
+.current-params-strip .lbl{background:transparent;border:0;color:#3f6212;padding:0;font-weight:800}
+footer{padding:16px 0 28px;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="topbar"><div class="logo"><div class="logo-badge">🌀</div><div><b>Easy Table Fan — Quạt bàn DIY</b><span>Mô phỏng • Sơ đồ mạch điện • Tư duy khoa học</span></div></div></div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="t0" onclick="showTab('t0')">1 · 👋 Giới thiệu</button>
+    <button class="tab-btn" data-tab="t2" onclick="showTab('t2')">2 · 🔌 Sơ đồ mạch điện</button>
+    <button class="tab-btn" data-tab="t1" onclick="showTab('t1')">3 · 🔬 Thí nghiệm</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+
+<!-- ============== TAB 1 — GIỚI THIỆU ============== -->
+<div class="tab-panel active" id="panel-t0">
+  <div class="card">
+    <b>👋 Giới thiệu: Quạt bàn DIY "Easy Table Fan"</b>
+    <p style="margin-top:8px;font-size:14px;line-height:1.65">Chiếc quạt bàn này được làm thủ công từ vật liệu tái chế: <b>cánh quạt và đế đều cắt từ cùng một chai nhựa PET</b> xanh neon, thân là thanh nhựa đỏ, chạy bằng <b>động cơ DC mini</b> lấy điện từ hộp pin gắn phía sau thân. Quạt không có lồng bảo vệ và chỉ thổi theo một hướng cố định.</p>
+    <p style="margin-top:6px;font-size:14px;line-height:1.65">Điều quyết định gió không chỉ là "cánh có quay hay không" — mà còn là <b>mức pin, góc nghiêng cánh, hướng nghiêng cánh và số lượng cánh</b>. Trước hết, hãy làm quen với từng bộ phận của quạt:</p>
+    <p class="hover-hint">🖱️ Rê chuột (hoặc chạm) vào từng bộ phận của quạt ở bên trái — thông tin nguyên vật liệu &amp; chức năng sẽ hiện cố định ở khung bên phải.</p>
+    <div class="stage" style="margin-top:12px">
+      <div class="product-wrap">
+        <div class="fan-left">
+        <svg class="fan-svg-wrap" width="300" height="430" viewBox="0 0 400 560" role="img" aria-label="Bản vẽ quạt bàn DIY">
+          <rect x="192" y="235" width="16" height="205" rx="6" fill="#dc2626"/>
+          <rect x="196" y="235" width="5" height="205" fill="#f87171" opacity=".7"/>
+          <rect x="176" y="250" width="48" height="92" rx="8" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+          <rect x="182" y="240" width="16" height="14" rx="3" fill="#38bdf8"/>
+          <text x="200" y="302" text-anchor="middle" fill="#fff" font-size="10" font-weight="800">PIN</text>
+          <path d="M 222 260 C 245 240, 238 190, 222 165" fill="none" stroke="#111827" stroke-width="3"/>
+          <path d="M 222 268 C 250 250, 242 195, 224 168" fill="none" stroke="#dc2626" stroke-width="3"/>
+          <rect x="168" y="438" width="64" height="30" rx="6" fill="#111827"/>
+          <ellipse cx="200" cy="438" rx="22" ry="7" fill="#d1d5db" opacity=".8"/>
+          <path d="M168 468 L232 468 C244 500, 252 520, 250 540 C249 552, 238 556, 200 556 C162 556, 151 552, 150 540 C148 520, 156 500, 168 468 Z" fill="#a3e635" stroke="#65a30d" stroke-width="2" opacity=".92"/>
+          <ellipse cx="178" cy="520" rx="10" ry="22" fill="#fff" opacity=".28"/>
+          <g style="--spinDur:1.4s"><g id="introBladeSet"></g></g>
+          <circle cx="200" cy="118" r="30" fill="#a3e635" stroke="#65a30d" stroke-width="3"/>
+          <circle cx="200" cy="118" r="19" fill="#111827"/>
+          <circle cx="200" cy="118" r="5" fill="#9ca3af"/>
+          <g id="introHoverZones">
+            <circle class="izone" data-part="canh" cx="200" cy="118" r="98"><title>Cánh quạt</title></circle>
+            <rect class="izone" data-part="than" x="188" y="338" width="24" height="100"><title>Thân trụ đỏ</title></rect>
+            <path class="izone-line" data-part="day" d="M 222 260 C 245 240, 238 190, 222 165 M 222 268 C 250 250, 242 195, 224 168"><title>Dây điện</title></path>
+            <rect class="izone" data-part="pin" x="172" y="236" width="56" height="110" rx="8"><title>Hộp pin</title></rect>
+            <path class="izone" data-part="de" d="M168 468 L232 468 C244 500, 252 520, 250 540 C249 552, 238 556, 200 556 C162 556, 151 552, 150 540 C148 520, 156 500, 168 468 Z"><title>Đế quạt</title></path>
+            <rect class="izone" data-part="nap" x="164" y="434" width="72" height="38" rx="6"><title>Nắp chai</title></rect>
+            <circle class="izone" data-part="dongco" cx="200" cy="118" r="32"><title>Động cơ DC</title></circle>
+          </g>
+        </svg>
+        </div>
+        <aside id="introPartInfoPanel" aria-live="polite">
+          <div class="panel-title">📋 Thông tin bộ phận</div>
+          <div id="introPartInfoContent">
+            <h4>👆 Rê chuột vào một bộ phận của quạt</h4>
+            <p style="color:var(--muted);font-size:13.5px">Khung này cố định ở bên phải. Khi rê chuột vào một bộ phận, khung sẽ hiện nguyên vật liệu và chức năng của bộ phận đó.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <b>❓ Trắc nghiệm: Suy luận từ cấu trúc — bộ phận</b>
+      <span id="quizScore1" class="badge neutral">0/10 câu đúng</span>
+    </div>
+    <p class="note" style="margin-top:6px">Mỗi câu yêu cầu em suy luận <b>vì sao bộ phận được làm như vậy</b> và <b>hệ quả của cấu trúc</b> — không chỉ đọc mô tả.</p>
+    <p id="gateNote1" class="gate-note"></p>
+    <div id="quizList1"></div>
+    <button class="btn btn-ghost" style="margin-top:12px" onclick="resetQuiz('tab1')">↺ Làm lại</button>
+  </div>
+
+  <div class="tab-nav"><span></span><button class="btn btn-primary" onclick="showTab('t2')">Tab 2: Sơ đồ mạch điện →</button></div>
+</div>
+
+<!-- ============== TAB 2 — MẠCH ĐIỆN ============== -->
+<div class="tab-panel" id="panel-t2">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h3>🔌 Sơ đồ mạch điện (đơn giản hoá)</h3>
+      <span id="circuitBadge" class="badge on">● DÒNG ĐIỆN ĐANG CHẠY</span>
+    </div>
+    <p class="note" style="margin-top:6px">Đọc theo vòng kín: ra khỏi cực + của pin → qua công tắc → tới động cơ → quay về cực −. Hở ở bất kỳ điểm nào, quạt dừng.<br><b style="color:#0369a1">👆 Bấm vào nút công tắc ngay trên hộp pin để tắt / bật dòng điện.</b> Các chấm vàng chạy dọc dây là dòng điện.</p>
+
+    <svg id="circuitSvg" viewBox="0 0 760 240" style="width:100%;height:auto;margin-top:10px" role="img" aria-label="Sơ đồ mạch: pin, công tắc, động cơ">
+      <text x="85" y="20" text-anchor="middle" font-weight="800" font-size="15">🔋 HỘP PIN</text>
+      <text x="85" y="37" text-anchor="middle" font-size="12" fill="#64748b">sau thân quạt</text>
+      <text x="330" y="20" text-anchor="middle" font-weight="800" font-size="15">🔘 CÔNG TẮC</text>
+      <text x="583" y="20" text-anchor="middle" font-weight="800" font-size="15">⚙️ ĐỘNG CƠ DC</text>
+      <text x="583" y="37" text-anchor="middle" font-size="12" fill="#64748b">ở tâm cánh quạt</text>
+      <line x1="155" y1="97" x2="255" y2="97" stroke="#dc2626" stroke-width="4"/>
+      <line x1="405" y1="97" x2="495" y2="97" stroke="#dc2626" stroke-width="4"/>
+      <path d="M 583 165 L 583 196 L 85 196 L 85 165" fill="none" stroke="#111827" stroke-width="4"/>
+      <g id="currentFlow">
+        <path class="flow-line" d="M 155 97 L 255 97"/>
+        <path class="flow-line" d="M 405 97 L 495 97"/>
+        <path class="flow-line" d="M 583 165 L 583 196 L 85 196 L 85 167"/>
+      </g>
+      <text x="205" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#dc2626">dây đỏ (+)</text>
+      <text x="360" y="222" text-anchor="middle" font-size="12" font-weight="700">dây đen (−) — đường về của dòng điện, tạo thành vòng kín</text>
+      <rect x="15" y="45" width="140" height="120" rx="12" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+      <g id="batterySwitch" class="battery-switch" onclick="toggleCircuit()" role="button" aria-label="Công tắc ở hộp pin">
+        <title>Bấm để bật / tắt dòng điện</title>
+        <rect id="battTrack" x="28" y="62" width="86" height="26" rx="13" fill="#16a34a"/>
+        <text id="battLabel" x="60" y="79" text-anchor="middle" fill="#fff" font-size="12" font-weight="800">BẬT</text>
+        <circle id="battKnob" cx="100" cy="75" r="10" fill="#fff" stroke="#cbd5e1" stroke-width="1"/>
+      </g>
+      <g aria-label="Cực dương"><title>Cực dương (+)</title>
+        <circle cx="136" cy="97" r="11" fill="#dc2626" stroke="#fff" stroke-width="2"/>
+        <text x="136" y="102.5" text-anchor="middle" fill="#fff" font-size="15" font-weight="800">+</text>
+      </g>
+      <g aria-label="Cực âm"><title>Cực âm (−)</title>
+        <circle cx="85" cy="146" r="10" fill="#111827" stroke="#fff" stroke-width="2"/>
+        <text x="85" y="151" text-anchor="middle" fill="#fff" font-size="15" font-weight="800">−</text>
+      </g>
+      <rect x="255" y="45" width="150" height="120" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+      <circle cx="288" cy="97" r="5" fill="#0f172a"/>
+      <circle cx="372" cy="97" r="5" fill="#0f172a"/>
+      <line id="switchLever" x1="288" y1="97" x2="372" y2="97" stroke="#16a34a" stroke-width="5" stroke-linecap="round"/>
+      <text id="switchState" x="330" y="135" text-anchor="middle" font-size="12" font-weight="700" fill="#166534">ĐÓNG — mạch kín</text>
+      <g id="motorGroup" class="motor-pulse">
+        <rect id="motorBox" x="495" y="45" width="176" height="120" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+        <g id="motorFan" class="spinning" aria-label="Icon cánh quạt của động cơ">
+          <path d="M583 102 L576 80 C576 73, 590 73, 590 80 L583 102 Z"/>
+          <path d="M583 102 L576 80 C576 73, 590 73, 590 80 L583 102 Z" transform="rotate(120 583 105)"/>
+          <path d="M583 102 L576 80 C576 73, 590 73, 590 80 L583 102 Z" transform="rotate(240 583 105)"/>
+          <circle cx="583" cy="105" r="6" fill="#0f172a"/>
+        </g>
+      </g>
+    </svg>
+    <div id="circuitStatus" class="good">● <b>Dòng điện đang chạy:</b> Pin (+) → dây đỏ → công tắc (đang đóng) → động cơ DC quay → dây đen → về pin (−). Vòng mạch kín, quạt hoạt động.</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <b>🧠 Trắc nghiệm: Tư duy về cơ chế mạch điện</b>
+      <span id="quizScore2" class="badge neutral">0/10 câu đúng</span>
+    </div>
+    <p class="note" style="margin-top:6px">Câu hỏi về <b>cơ chế</b> — vì sao mạch kín mới chạy, cực pin, chiều dòng điện, hệ quả khi hở mạch. Đọc kỹ sơ đồ trước khi chọn.</p>
+    <p id="gateNote2" class="gate-note"></p>
+    <div id="quizList2"></div>
+    <button class="btn btn-ghost" style="margin-top:12px" onclick="resetQuiz('tab2')">↺ Làm lại</button>
+  </div>
+
+  <div class="tab-nav"><button class="btn btn-ghost" onclick="showTab('t0')">← Tab 1</button><button class="btn btn-primary" onclick="showTab('t1')">Tab 3: Thí nghiệm →</button></div>
+</div>
+
+<!-- ============== TAB 3 — THÍ NGHIỆM (5 BƯỚC) ============== -->
+<div class="tab-panel" id="panel-t1">
+
+  <!-- BƯỚC 1 -->
+  <div class="card step-card">
+    <div class="step-num">1</div>
+    <h3>Chọn giả thuyết</h3>
+    <p class="note">Mỗi giả thuyết là một câu hỏi khoa học. Chọn <b>một</b> giả thuyết từ danh sách sổ xuống để kiểm chứng — đây là <b>biến độc lập</b> em sẽ thay đổi.</p>
+    <div class="hypo-selector-wrap">
+      <label for="hypoSelect" class="hypo-selector-label">📌 Chọn 1 giả thuyết để kiểm chứng:</label>
+      <select id="hypoSelect" class="hypo-select" onchange="selectHypo(this.value)">
+        <option value="">— Bấm để sổ danh sách giả thuyết —</option>
+        <option value="H1">H1 · Số lượng cánh quạt — Tăng số cánh có làm gió mạnh hơn?</option>
+        <option value="H2">H2 · Dung lượng pin — Pin yếu đi có làm gió yếu đi?</option>
+        <option value="H3">H3 · Góc nghiêng cánh — Góc nào cho gió mạnh nhất (0°–90°)?</option>
+        <option value="H4">H4 · Hướng nghiêng cánh — Đổi hướng nghiêng có đổi chiều gió?</option>
+        <option value="H5">H5 · Đế có vật nặng — Bao nhiêu gram thì quạt đứng vững?</option>
+      </select>
+    </div>
+    <div id="hypoDetail" class="hypo-detail" style="display:none">
+      <div class="hypo-detail-head">
+        <span class="hypo-badge-lg" id="hypoDetailBadge">H1</span>
+        <div>
+          <b id="hypoDetailTitle">—</b>
+          <div id="hypoDetailQuestion" class="note">—</div>
+        </div>
+      </div>
+      <div id="hypoDetailGuidance" class="hypo-guidance">—</div>
+    </div>
+  </div>
+
+  <!-- BƯỚC 2 -->
+  <div class="card step-card">
+    <div class="step-num">2</div>
+    <h3>Dự đoán của em</h3>
+    <p class="prompt-line" id="hypoPrompt">👆 Hãy chọn giả thuyết ở Bước 1 trước — câu hỏi khoa học sẽ hiện ở đây.</p>
+    <label style="font-size:13.5px;font-weight:700;display:block;margin:8px 0 6px">Em dự đoán điều gì sẽ xảy ra? Vì sao em nghĩ vậy?</label>
+    <textarea id="predictionInput" class="science-textarea" placeholder="VD: Em nghĩ tăng số cánh sẽ làm gió mạnh hơn, vì nhiều cánh hơn thì mỗi vòng quay đẩy được nhiều không khí hơn..."></textarea>
+  </div>
+
+  <!-- BƯỚC 3 -->
+  <div class="card step-card">
+    <div class="step-num">3</div>
+    <h3>Thiết lập thông số theo giả thuyết</h3>
+    <p class="prompt-line" id="hypoGuidance">Chọn giả thuyết ở Bước 1 để xem hướng dẫn thiết lập thông số.</p>
+    <div class="controls">
+      <div class="ctrl"><div class="switch-row"><div><b>Công tắc trên hộp pin</b><div class="note" id="switchNote">Đang BẬT — mạch kín</div></div><button id="switchBtn" class="switch on" onclick="togglePower()" aria-label="Bật tắt"></button></div></div>
+      <div class="ctrl"><label>Số lượng cánh quạt <span id="bladeVal">6 cánh</span></label><input id="bladeRange" type="range" min="2" max="8" step="1" value="6" oninput="updateFan()"><div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b"><span>2 cánh</span><span>8 cánh</span></div></div>
+      <div class="ctrl"><label>Pin <span id="batVal">80%</span></label><input id="batRange" type="range" min="0" max="100" step="5" value="80" oninput="updateFan()"><div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b"><span>0%</span><span>100%</span></div></div>
+      <div class="ctrl"><label>Góc nghiêng cánh <span id="pitchVal">35°</span></label><input id="pitchRange" type="range" min="0" max="90" step="5" value="35" oninput="updateFan()"><div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b"><span>0°</span><span>90°</span></div></div>
+      <div class="ctrl"><label>Hướng nghiêng của cánh</label><div class="seg" role="radiogroup">
+        <label><input type="radio" name="tiltDir" value="fwd" checked onchange="updateFan()"> ↗ Trước</label>
+        <label><input type="radio" name="tiltDir" value="flat" onchange="updateFan()"> • Phẳng</label>
+        <label><input type="radio" name="tiltDir" value="back" onchange="updateFan()"> ↙ Sau</label>
+      </div></div>
+      <div class="ctrl"><label>Vật nặng trong đế <span id="baseVal">0 g</span></label><input id="baseRange" type="range" min="0" max="200" step="10" value="0" oninput="updateFan()"><div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b"><span>0g (rỗng)</span><span>200g</span></div><div class="note" id="baseNote" style="margin-top:4px">Đế rỗng — chưa có vật nặng</div></div>
+    </div>
+    <p class="note" style="margin-top:12px">👇 Đặt xong thông số → cuộn xuống <b>Bước 4</b> để xem quạt chạy và ghi nhật ký.</p>
+  </div>
+
+  <!-- BƯỚC 4 -->
+  <div class="card step-card">
+    <div class="step-num">4</div>
+    <h3>Chạy thí nghiệm &amp; ghi nhật ký</h3>
+    <div class="current-params-strip" id="currentParamsStrip">
+      <span class="lbl">📌 Đang thử:</span>
+      <span id="cpsBat">Pin 80%</span>
+      <span id="cpsBlades">6 cánh</span>
+      <span id="cpsPitch">35°</span>
+      <span id="cpsTilt">trước</span>
+      <span id="cpsBase">đế 0g</span>
+    </div>
+    <div class="experiment-layout">
+      <!-- Cột trái: quạt -->
+      <div class="fan-col">
+        <div class="stage" style="padding:10px">
+          <svg class="fan-svg-wrap" viewBox="0 0 400 560" role="img" aria-label="Quạt bàn DIY đang mô phỏng">
+            <rect x="192" y="235" width="16" height="205" rx="6" fill="#dc2626"/>
+            <rect x="196" y="235" width="5" height="205" fill="#f87171" opacity=".7"/>
+            <rect x="176" y="250" width="48" height="92" rx="8" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+            <rect x="182" y="240" width="16" height="14" rx="3" fill="#38bdf8"/>
+            <text x="200" y="302" text-anchor="middle" fill="#fff" font-size="10" font-weight="800">PIN</text>
+            <path d="M 222 260 C 245 240, 238 190, 222 165" fill="none" stroke="#111827" stroke-width="3"/>
+            <path d="M 222 268 C 250 250, 242 195, 224 168" fill="none" stroke="#dc2626" stroke-width="3"/>
+            <path id="tab3WireFlow" d="M 222 260 C 245 240, 238 190, 222 165" fill="none" stroke="#facc15" stroke-width="2.5" stroke-dasharray="3 8" stroke-linecap="round" opacity="0"/>
+            <rect x="168" y="438" width="64" height="30" rx="6" fill="#111827"/>
+            <ellipse cx="200" cy="438" rx="22" ry="7" fill="#d1d5db" opacity=".8"/>
+            <path d="M168 468 L232 468 C244 500, 252 520, 250 540 C249 552, 238 556, 200 556 C162 556, 151 552, 150 540 C148 520, 156 500, 168 468 Z" fill="#a3e635" stroke="#65a30d" stroke-width="2" opacity=".92"/>
+            <ellipse cx="178" cy="520" rx="10" ry="22" fill="#fff" opacity=".28"/>
+            <g id="bladesGroup"><g id="bladeSet"></g></g>
+            <circle cx="200" cy="118" r="30" fill="#a3e635" stroke="#65a30d" stroke-width="3"/>
+            <circle cx="200" cy="118" r="19" fill="#111827"/>
+            <circle cx="200" cy="118" r="5" fill="#9ca3af"/>
+            <g id="windVectorGroup" opacity="0" aria-label="Vector gió">
+              <line id="windVecLine" x1="350" y1="118" x2="350" y2="118" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+              <polygon id="windVecHead" points="350,118 350,118 350,118" fill="#0284c7"/>
+              <text id="windVecLabel" x="350" y="100" font-size="11" font-weight="800" fill="#0284c7" text-anchor="middle">vector gió</text>
+            </g>
+          </svg>
+        </div>
+        <section class="windbox-side">
+          <b style="font-size:13px;letter-spacing:.05em">💨 HƯỚNG GIÓ &amp; CƯỜNG ĐỘ</b>
+          <div class="wind-scene">
+            <span id="panelWindLabel" style="font-size:12.5px;font-weight:800;color:#334155">—</span>
+            <span id="panelWindArrows" class="wind-arrows"><span class="warrow">→</span><span class="warrow">→</span><span class="warrow">→</span><span class="warrow">→</span></span>
+          </div>
+          <div class="windbar"><div id="windFill" class="windfill"></div></div>
+          <p id="windText" style="font-size:13px;font-weight:600;color:#0369a1;margin-top:8px">—</p>
+          <div style="margin-top:10px"><span id="fanBadge" class="badge on">● ĐANG CHẠY</span></div>
+        </section>
+      </div>
+
+      <!-- Cột phải: nhật ký -->
+      <div class="log-col">
+        <div class="exp-log-header">
+          <h4>📋 Nhật ký thí nghiệm</h4>
+          <div class="exp-log-btns">
+            <button class="primary" onclick="logCurrentState()" title="Lưu trạng thái hiện tại vào nhật ký">📌 Ghi</button>
+            <button id="autoRunBtn" onclick="autoRunExperiment()" title="Tự động chạy tất cả giá trị của biến theo giả thuyết">⚡ Tự động</button>
+            <button onclick="clearLog()" title="Xoá toàn bộ nhật ký">🗑 Xoá</button>
+          </div>
+        </div>
+        <div class="log-table-wrap">
+          <table class="exp-log">
+            <thead>
+              <tr><th>#</th><th>Pin</th><th>Cánh</th><th>Góc</th><th>Hướng</th><th>Đế</th><th>Kết quả</th></tr>
+            </thead>
+            <tbody id="expLogBody"><tr><td colspan="7" style="color:#64748b;padding:14px;text-align:center">Chưa có dữ liệu — đặt thông số ở Bước 3, rồi bấm <b>📌 Ghi</b> (hoặc <b>⚡ Tự động</b> để chạy cả dãy).</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BƯỚC 5 -->
+  <div class="card step-card">
+    <div class="step-num">5</div>
+    <h3>Kết luận của em</h3>
+    <p class="prompt-line" id="conclusionPrompt">Dựa vào nhật ký thí nghiệm ở Bước 4, em rút ra kết luận gì? Hãy so sánh với dự đoán ban đầu.</p>
+    <label style="font-size:13.5px;font-weight:700;display:block;margin:8px 0 6px">Kết luận (dựa trên số liệu):</label>
+    <textarea id="conclusionInput" class="science-textarea" placeholder="VD: Khi tăng số cánh từ 2 → 8 (giữ pin 100%, góc 40°, đế 100g), gió tăng từ 42% lên 88%. Dự đoán của em đúng. Giải thích: nhiều cánh hơn → mỗi vòng quay đẩy được nhiều không khí hơn..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="downloadReport()">📥 Tải báo cáo (.txt)</button>
+      <button class="btn btn-ghost" onclick="resetAllExperiment()">↺ Bắt đầu lại thí nghiệm</button>
+    </div>
+  </div>
+
+  <div class="tab-nav"><button class="btn btn-ghost" onclick="showTab('t2')">← Tab 2: Mạch điện</button><span></span></div>
+</div>
+
+</main>
+
+<div id="gateToast" role="status" aria-live="polite"></div>
+<script>
+/* ============================================================
+   UTILITIES
+============================================================ */
+function buildBlades(elId, cx, cy, n){
+  const el = document.getElementById(elId); if(!el) return;
+  n = n || 6;
+  let html = '';
+  for(let i=0;i<n;i++){
+    const ang = i*(360/n);
+    html += '<g transform="rotate('+ang+' '+cx+' '+cy+')">'
+          + '<path d="M'+cx+' '+cy+' L'+(cx-13)+' '+(cy-88)+' C'+(cx-13)+' '+(cy-104)+', '+(cx+13)+' '+(cy-104)+', '+(cx+13)+' '+(cy-88)+' L'+cx+' '+cy+' Z" fill="#a3e635" stroke="#65a30d" stroke-width="2" opacity=".94"/>'
+          + '<line x1="'+cx+'" y1="'+(cy-14)+'" x2="'+cx+'" y2="'+(cy-84)+'" stroke="#bef264" stroke-width="3" opacity=".7"/>'
+          + '</g>';
+  }
+  el.innerHTML = html;
+}
+
+function showTab(id){
+  if(typeof isUnlocked === 'function' && !isUnlocked(id)){
+    showGateToast('🔒 Tab này đang khoá — hãy đạt tối thiểu 70% câu đúng ở trắc nghiệm của tab trước để mở.');
+    return;
+  }
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-'+id));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ============================================================
+   PHYSICS
+============================================================ */
+function pitchEfficiency(angleDeg){
+  if(angleDeg <= 0) return 0;
+  if(angleDeg >= 90) return 0.05;
+  const rad = angleDeg * Math.PI / 180;
+  const sinT = Math.sin(rad);
+  let stall = 1;
+  if(angleDeg > 35){
+    stall = Math.max(0.05, 1 - Math.pow((angleDeg - 35)/40, 1.5));
+  }
+  return sinT * stall;
+}
+
+function computeWind(angle, state){
+  if(!state.power || state.bat <= 0) return {mag:0, dir:'none', tipped:false, requiredWeight:0};
+  const eff = 0.35 + 0.65 * state.bat/100;
+  const pitchF = pitchEfficiency(angle);
+  const bladeF = Math.min(1.2, 0.5 + 0.1*state.count);
+  let mag = Math.round(Math.min(1, eff * pitchF * bladeF) * 100);
+  let dir = 'fwd';
+  if(state.tilt === 'flat'){ dir = 'none'; mag = Math.round(mag * 0.1); }
+  else if(state.tilt === 'back'){ dir = 'back'; }
+  // Tipping: required base weight (g) grows with blade count + motor speed
+  const requiredWeight = Math.max(0, (state.count - 6) * 30 * eff);
+  const tipped = (state.baseWeight || 0) < requiredWeight && mag > 20;
+  if(tipped){ mag = 0; dir = 'none'; }
+  return {mag, dir, tipped, requiredWeight};
+}
+
+/* ============================================================
+   STATE
+============================================================ */
+let power = true;
+let baseWeight = 0;
+let currentWind = {mag:0, dir:'none', tipped:false, requiredWeight:0};
+let lastBladeCount = 6;
+let selectedHypo = null;
+let expLog = [];
+
+const HYPOTHESES = {
+  H1: { name: 'Số lượng cánh quạt',
+    prompt: 'Khi tăng số cánh quạt từ 2 → 8 (giữ pin, góc nghiêng, hướng nghiêng, vật nặng đế không đổi), cường độ gió sẽ thay đổi như thế nào?',
+    guidance: 'Hãy thay đổi <b>số cánh</b> từ 2 → 8. Giữ pin = 100%, góc = 40°, hướng = trước, vật nặng đế = 100g (đủ để không bị lật).',
+    sweep: { variable: 'count', values: [2,3,4,5,6,7,8], fixed: { bat: 100, pitch: 40, tilt: 'fwd', baseWeight: 100 } } },
+  H2: { name: 'Dung lượng pin',
+    prompt: 'Khi pin yếu dần từ 100% → 20% (giữ số cánh, góc nghiêng, hướng nghiêng, vật nặng đế không đổi), cường độ gió sẽ thay đổi như thế nào?',
+    guidance: 'Hãy thay đổi <b>pin</b> từ 100% → 20%. Giữ số cánh = 6, góc = 40°, hướng = trước, vật nặng đế = 100g.',
+    sweep: { variable: 'bat', values: [100,80,60,40,20], fixed: { count: 6, pitch: 40, tilt: 'fwd', baseWeight: 100 } } },
+  H3: { name: 'Góc nghiêng cánh',
+    prompt: 'Khi thay đổi góc nghiêng cánh từ 0° → 90°, cường độ gió có hướng thay đổi như thế nào? Góc nào cho gió mạnh nhất?',
+    guidance: 'Hãy thay đổi <b>góc</b> từ 0° → 90° (mỗi 10°). Giữ pin = 100%, số cánh = 6, hướng = trước, vật nặng đế = 100g.',
+    sweep: { variable: 'pitch', values: [0,10,20,30,40,50,60,70,80,90], fixed: { bat: 100, count: 6, tilt: 'fwd', baseWeight: 100 } } },
+  H4: { name: 'Hướng nghiêng cánh',
+    prompt: 'Khi đổi hướng nghiêng cánh (trước / phẳng / sau), chiều và cường độ gió thay đổi như thế nào?',
+    guidance: 'Hãy thử 3 <b>hướng</b>: trước → phẳng → sau. Giữ pin = 100%, số cánh = 6, góc = 40°, vật nặng đế = 100g.',
+    sweep: { variable: 'tilt', values: ['fwd','flat','back'], fixed: { bat: 100, count: 6, pitch: 40, baseWeight: 100 } } },
+  H5: { name: 'Đế có vật nặng',
+    prompt: 'Khi chạy quạt mạnh (pin 100%, 8 cánh, góc 40°), cần bao nhiêu gram vật nặng trong đế để quạt đứng vững, không bị lật?',
+    guidance: 'Hãy thay đổi <b>khối lượng đế</b> từ 0g → 200g (mỗi 20g). Giữ pin = 100%, số cánh = 8, góc = 40°, hướng = trước.',
+    sweep: { variable: 'baseWeight', values: [0,20,40,60,80,100,150,200], fixed: { bat: 100, count: 8, pitch: 40, tilt: 'fwd' } } }
+};
+
+/* ============================================================
+   TAB 3: SIMULATOR
+============================================================ */
+function togglePower(){ power = !power; updateFan(); }
+
+function setWindViz(dir, mag){
+  const dur = Math.max(.45, 1.55 - mag/100*1.1).toFixed(2)+'s';
+  const box = document.getElementById('panelWindArrows');
+  if(!box) return;
+  box.classList.toggle('back', dir === 'back');
+  box.style.setProperty('--windDur', dur);
+  box.querySelectorAll('.warrow').forEach(a => {
+    a.textContent = dir === 'back' ? '←' : '→';
+    a.classList.toggle('flow', mag > 3 && dir !== 'none');
+  });
+  const strength = mag <= 3 ? 'Không có gió' : mag < 35 ? 'Yếu' : mag < 70 ? 'Vừa' : 'Mạnh';
+  const dirText = dir === 'back' ? '← Về phía sau' : dir === 'none' ? '• Không có hướng' : '→ Về phía trước';
+  const pl = document.getElementById('panelWindLabel');
+  if(pl) pl.textContent = 'Hướng: ' + dirText + ' • Cường độ: ' + strength;
+}
+
+function updateWindVector(dir, mag, tipped){
+  const g = document.getElementById('windVectorGroup');
+  const line = document.getElementById('windVecLine');
+  const head = document.getElementById('windVecHead');
+  const label = document.getElementById('windVecLabel');
+  if(!g) return;
+  if(dir === 'none' || mag < 5 || tipped){ g.setAttribute('opacity', '0'); return; }
+  g.setAttribute('opacity', '1');
+  const L = 20 + (mag/100) * 60;
+  const midX = 350, y0 = 118;
+  if(dir === 'fwd'){
+    const x1 = midX - L/2, x2 = midX + L/2;
+    line.setAttribute('x1', x1); line.setAttribute('x2', x2);
+    line.setAttribute('y1', y0); line.setAttribute('y2', y0);
+    head.setAttribute('points', `${x2},${y0} ${x2-11},${y0-6} ${x2-11},${y0+6}`);
+    label.textContent = 'F gió → (' + mag + '%)';
+  } else {
+    const x1 = midX + L/2, x2 = midX - L/2;
+    line.setAttribute('x1', x1); line.setAttribute('x2', x2);
+    line.setAttribute('y1', y0); line.setAttribute('y2', y0);
+    head.setAttribute('points', `${x2},${y0} ${x2+11},${y0-6} ${x2+11},${y0+6}`);
+    label.textContent = '← F gió (' + mag + '%)';
+  }
+  label.setAttribute('x', midX);
+}
+
+function updateFan(){
+  const bat   = parseInt(document.getElementById('batRange').value, 10);
+  const angle = parseInt(document.getElementById('pitchRange').value, 10);
+  const count = parseInt(document.getElementById('bladeRange').value, 10);
+  baseWeight  = parseInt(document.getElementById('baseRange').value, 10);
+  const tiltEl = document.querySelector('input[name="tiltDir"]:checked');
+  const tilt = tiltEl ? tiltEl.value : 'fwd';
+
+  document.getElementById('batVal').textContent = bat + '%';
+  document.getElementById('pitchVal').textContent = angle + '°';
+  document.getElementById('bladeVal').textContent = count + ' cánh';
+  document.getElementById('baseVal').textContent = baseWeight + ' g';
+
+  const bn = document.getElementById('baseNote');
+  if(bn){
+    bn.textContent = baseWeight === 0 ? 'Đế rỗng — chưa có vật nặng'
+                  : baseWeight < 50 ? 'Đế nhẹ — ' + baseWeight + 'g, dễ rung'
+                  : baseWeight < 120 ? 'Đế vừa — ' + baseWeight + 'g'
+                  : 'Đế nặng — ' + baseWeight + 'g, rất vững';
+  }
+
+  if(count !== lastBladeCount){ buildBlades('bladeSet', 200, 118, count); lastBladeCount = count; }
+
+  const result = computeWind(angle, {power, bat, count, tilt, baseWeight});
+  currentWind = result;
+
+  let eff = 0;
+  if(power && bat > 0) eff = 0.35 + 0.65 * bat/100;
+
+  const blades = document.getElementById('bladesGroup');
+  if(eff <= 0 || result.tipped){ blades.classList.remove('spinning'); }
+  else {
+    blades.classList.add('spinning');
+    blades.style.setProperty('--spinDur', Math.max(.18, 1.1 - eff*.55).toFixed(2)+'s');
+    blades.style.animationDirection = tilt === 'back' ? 'reverse' : 'normal';
+  }
+
+  const fanSvg = document.querySelector('#panel-t1 .fan-svg-wrap');
+  if(fanSvg){
+    if(result.tipped){ fanSvg.classList.add('tipped'); fanSvg.classList.remove('shaking'); }
+    else if(eff > 0 && baseWeight < (result.requiredWeight + 40)){
+      fanSvg.classList.remove('tipped'); fanSvg.classList.add('shaking');
+      const margin = Math.max(0, (result.requiredWeight + 40) - baseWeight);
+      fanSvg.style.setProperty('--shakeAmp', (0.5 + margin * 0.06).toFixed(1)+'px');
+      fanSvg.style.setProperty('--shakeDur', Math.max(.12, .5 - eff*.3).toFixed(2)+'s');
+    } else { fanSvg.classList.remove('tipped', 'shaking'); }
+  }
+
+  const wireFlow = document.getElementById('tab3WireFlow');
+  if(wireFlow){
+    const on = power && bat > 0;
+    wireFlow.setAttribute('opacity', on ? '0.9' : '0');
+    wireFlow.classList.toggle('wire-flow-on', on);
+  }
+
+  updateWindVector(result.dir, result.mag, result.tipped);
+
+  const windFill = document.getElementById('windFill');
+  windFill.style.width = result.mag + '%';
+  windFill.style.background = result.dir === 'back' ? 'linear-gradient(90deg,#f97316,#dc2626)'
+                             : result.dir === 'none' ? '#94a3b8' : '';
+  setWindViz(result.dir, result.mag);
+
+  const badge = document.getElementById('fanBadge');
+  const sw = document.getElementById('switchBtn');
+  const sn = document.getElementById('switchNote');
+  const wt = document.getElementById('windText');
+
+  if(result.tipped){
+    badge.textContent = '⚠️ QUẠT BỊ LẬT!'; badge.className = 'badge off';
+    sw.classList.toggle('on', power);
+    sn.textContent = power ? 'BẬT — mạch kín' : 'TẮT — mạch hở';
+    wt.textContent = `Quạt bị LẬT do mất cân bằng! Với ${count} cánh + pin ${bat}%, cần đế nặng ≥ ${Math.round(result.requiredWeight)}g. Hiện tại đế chỉ ${baseWeight}g. Hãy tăng vật nặng trong đế, hoặc giảm số cánh / pin.`;
+  }
+  else if(!power){ badge.textContent = '○ ĐANG TẮT'; badge.className = 'badge off'; sw.classList.remove('on'); sn.textContent = 'TẮT — mạch hở'; wt.textContent = 'Quạt đang tắt — không có gió.'; }
+  else if(bat <= 0){ badge.textContent = '○ HẾT PIN'; badge.className = 'badge off'; sw.classList.add('on'); sn.textContent = 'BẬT nhưng pin hết'; wt.textContent = 'Pin hết — quạt không chạy dù công tắc đang bật.'; }
+  else if(angle === 0){ badge.textContent = '● CHẠY — 0°'; badge.className = 'badge on'; sw.classList.add('on'); sn.textContent = 'BẬT — mạch kín'; wt.textContent = 'Góc 0° — cánh phẳng, quay mà không đẩy được không khí. Vector gió ≈ 0.'; }
+  else if(angle >= 85){ badge.textContent = '● CHẠY — ~90°'; badge.className = 'badge on'; sw.classList.add('on'); sn.textContent = 'BẬT — mạch kín'; wt.textContent = `Góc ${angle}° — cánh gần vuông góc, khuấy/cản khí thay vì đẩy. Gió có hướng rất yếu.`; }
+  else if(tilt === 'flat'){ badge.textContent = '● KHÔNG NGHIÊNG'; badge.className = 'badge on'; sw.classList.add('on'); sn.textContent = 'BẬT — mạch kín'; wt.textContent = `"Không nghiêng" — cánh không chéo theo hướng đẩy, gió yếu và không rõ hướng.`; }
+  else if(tilt === 'back'){ badge.textContent = '● GIÓ NGƯỢC'; badge.className = 'badge off'; sw.classList.add('on'); sn.textContent = 'BẬT — mạch kín'; wt.textContent = `Gió thổi NGƯỢC về phía sau — cùng chiều quay nhưng cánh nghiêng ngược → vector lực đảo dấu.`; }
+  else {
+    badge.textContent = '● ĐANG CHẠY'; badge.className = 'badge on';
+    sw.classList.add('on'); sn.textContent = 'BẬT — mạch kín';
+    let msg = result.mag < 45 ? 'Gió yếu — pin yếu, động cơ quay chậm.'
+             : `Gió mạnh — ${count} cánh nghiêng ${angle}° đẩy khí về phía trước.`;
+    wt.textContent = msg;
+  }
+
+  const cpsBat = document.getElementById('cpsBat'); if(cpsBat) cpsBat.textContent = 'Pin ' + bat + '%';
+  const cpsBlades = document.getElementById('cpsBlades'); if(cpsBlades) cpsBlades.textContent = count + ' cánh';
+  const cpsPitch = document.getElementById('cpsPitch'); if(cpsPitch) cpsPitch.textContent = angle + '°';
+  const cpsTilt = document.getElementById('cpsTilt'); if(cpsTilt) cpsTilt.textContent = tilt === 'fwd' ? 'trước' : tilt === 'flat' ? 'phẳng' : 'sau';
+  const cpsBase = document.getElementById('cpsBase'); if(cpsBase) cpsBase.textContent = 'đế ' + baseWeight + 'g';
+}
+
+/* ============================================================
+   HYPOTHESIS (dropdown, one shown at a time)
+============================================================ */
+function selectHypo(key){
+  if(!key){
+    selectedHypo = null;
+    document.getElementById('hypoDetail').style.display = 'none';
+    document.getElementById('autoRunBtn').disabled = true;
+    return;
+  }
+  if(expLog.length > 0 && selectedHypo !== key){
+    if(!confirm('Đổi giả thuyết sẽ xoá nhật ký cũ. Tiếp tục?')){
+      document.getElementById('hypoSelect').value = selectedHypo || '';
+      return;
+    }
+    expLog = []; renderLog();
+  }
+  selectedHypo = key;
+  const h = HYPOTHESES[key];
+
+  const detail = document.getElementById('hypoDetail');
+  detail.style.display = 'block';
+  document.getElementById('hypoDetailBadge').textContent = key;
+  document.getElementById('hypoDetailTitle').textContent = h.name;
+  document.getElementById('hypoDetailQuestion').textContent = h.prompt;
+  document.getElementById('hypoDetailGuidance').innerHTML = '💡 ' + h.guidance;
+
+  document.getElementById('hypoPrompt').innerHTML = '<b>' + h.name + '</b> — ' + h.prompt;
+  document.getElementById('hypoGuidance').innerHTML = '💡 ' + h.guidance;
+  document.getElementById('conclusionPrompt').innerHTML = 'Dựa vào nhật ký thí nghiệm ở Bước 4, em kết luận gì về giả thuyết "<b>' + h.name + '</b>"? So sánh với dự đoán ở Bước 2.';
+
+  const autoRunBtn = document.getElementById('autoRunBtn');
+  if(autoRunBtn) autoRunBtn.disabled = false;
+}
+
+/* ============================================================
+   LOG
+============================================================ */
+function logEntry(config, result){
+  expLog.push({
+    n: expLog.length + 1,
+    bat: config.bat, count: config.count, pitch: config.pitch,
+    tilt: config.tilt, baseWeight: config.baseWeight,
+    mag: result.mag, dir: result.dir, tipped: result.tipped,
+    requiredWeight: result.requiredWeight
+  });
+  renderLog();
+}
+
+function logCurrentState(){
+  if(!selectedHypo){ alert('Hãy chọn giả thuyết ở Bước 1 trước khi ghi nhật ký.'); return; }
+  const config = {
+    power: power,
+    bat: parseInt(document.getElementById('batRange').value, 10),
+    count: parseInt(document.getElementById('bladeRange').value, 10),
+    pitch: parseInt(document.getElementById('pitchRange').value, 10),
+    tilt: document.querySelector('input[name="tiltDir"]:checked').value,
+    baseWeight: parseInt(document.getElementById('baseRange').value, 10)
+  };
+  const result = computeWind(config.pitch, config);
+  logEntry(config, result);
+}
+
+function renderLog(){
+  const body = document.getElementById('expLogBody');
+  if(!body) return;
+  if(expLog.length === 0){
+    body.innerHTML = '<tr><td colspan="7" style="color:#64748b;padding:14px;text-align:center">Chưa có dữ liệu — đặt thông số ở Bước 3, rồi bấm <b>📌 Ghi</b> (hoặc <b>⚡ Tự động</b> để chạy cả dãy).</td></tr>';
+    return;
+  }
+  body.innerHTML = expLog.map(e => {
+    const tiltTxt = e.tilt === 'fwd' ? 'trước' : e.tilt === 'flat' ? 'phẳng' : 'sau';
+    const dirTxt = e.tipped ? '' : (e.dir === 'fwd' ? ' →' : e.dir === 'back' ? ' ←' : '');
+    const res = e.tipped
+      ? `⚠️ LẬT (cần ≥${Math.round(e.requiredWeight)}g)`
+      : (e.mag + '%' + dirTxt);
+    return `<tr>
+      <td>${e.n}</td>
+      <td>${e.bat}%</td>
+      <td>${e.count}</td>
+      <td>${e.pitch}°</td>
+      <td>${tiltTxt}</td>
+      <td>${e.baseWeight}g</td>
+      <td class="${e.tipped?'tipped':''}"><b>${res}</b></td>
+    </tr>`;
+  }).join('');
+}
+
+function clearLog(){ expLog = []; renderLog(); }
+
+/* ============================================================
+   AUTO-RUN
+============================================================ */
+function autoRunExperiment(){
+  if(!selectedHypo){ alert('Hãy chọn giả thuyết ở Bước 1 trước.'); return; }
+  const h = HYPOTHESES[selectedHypo];
+  if(!h.sweep){ alert('Giả thuyết này chưa có cấu hình tự động.'); return; }
+
+  expLog = [];
+  power = true;
+
+  h.sweep.values.forEach(val => {
+    const config = {
+      power: true,
+      bat:    h.sweep.fixed.bat         !== undefined ? h.sweep.fixed.bat         : 80,
+      count:  h.sweep.fixed.count       !== undefined ? h.sweep.fixed.count       : 6,
+      pitch:  h.sweep.fixed.pitch       !== undefined ? h.sweep.fixed.pitch       : 40,
+      tilt:   h.sweep.fixed.tilt        !== undefined ? h.sweep.fixed.tilt        : 'fwd',
+      baseWeight: h.sweep.fixed.baseWeight !== undefined ? h.sweep.fixed.baseWeight : 0
+    };
+    config[h.sweep.variable] = val;
+    const result = computeWind(config.pitch, config);
+    logEntry(config, result);
+  });
+
+  // Set UI to last value
+  const lastVal = h.sweep.values[h.sweep.values.length - 1];
+  const lastConfig = {
+    bat:    h.sweep.fixed.bat         !== undefined ? h.sweep.fixed.bat         : 80,
+    count:  h.sweep.fixed.count       !== undefined ? h.sweep.fixed.count       : 6,
+    pitch:  h.sweep.fixed.pitch       !== undefined ? h.sweep.fixed.pitch       : 40,
+    tilt:   h.sweep.fixed.tilt        !== undefined ? h.sweep.fixed.tilt        : 'fwd',
+    baseWeight: h.sweep.fixed.baseWeight !== undefined ? h.sweep.fixed.baseWeight : 0
+  };
+  lastConfig[h.sweep.variable] = lastVal;
+
+  document.getElementById('batRange').value = lastConfig.bat;
+  document.getElementById('bladeRange').value = lastConfig.count;
+  document.getElementById('pitchRange').value = lastConfig.pitch;
+  document.getElementById('baseRange').value = lastConfig.baseWeight;
+  document.querySelector('input[name="tiltDir"][value="'+lastConfig.tilt+'"]').checked = true;
+  updateFan();
+
+  const logEl = document.querySelector('.log-col');
+  if(logEl) logEl.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* ============================================================
+   RESET ALL
+============================================================ */
+function resetAllExperiment(){
+  if(!confirm('Bắt đầu lại thí nghiệm? Dự đoán, nhật ký và kết luận sẽ bị xoá.')) return;
+  expLog = [];
+  selectedHypo = null;
+  document.getElementById('hypoSelect').value = '';
+  document.getElementById('hypoDetail').style.display = 'none';
+  document.getElementById('hypoPrompt').innerHTML = '👆 Hãy chọn giả thuyết ở Bước 1 trước — câu hỏi khoa học sẽ hiện ở đây.';
+  document.getElementById('hypoGuidance').innerHTML = 'Chọn giả thuyết ở Bước 1 để xem hướng dẫn thiết lập thông số.';
+  document.getElementById('conclusionPrompt').innerHTML = 'Dựa vào nhật ký thí nghiệm ở Bước 4, em kết luận gì? So sánh với dự đoán ban đầu.';
+  document.getElementById('predictionInput').value = '';
+  document.getElementById('conclusionInput').value = '';
+  renderLog();
+  document.getElementById('batRange').value = 80;
+  document.getElementById('bladeRange').value = 6;
+  document.getElementById('pitchRange').value = 35;
+  document.getElementById('baseRange').value = 0;
+  document.querySelector('input[name="tiltDir"][value="fwd"]').checked = true;
+  power = true;
+  updateFan();
+  const autoRunBtn = document.getElementById('autoRunBtn');
+  if(autoRunBtn) autoRunBtn.disabled = true;
+}
+
+/* ============================================================
+   DOWNLOAD
+============================================================ */
+function downloadReport(){
+  if(!selectedHypo){ alert('Hãy chọn giả thuyết và làm thí nghiệm trước khi tải báo cáo.'); return; }
+  const h = HYPOTHESES[selectedHypo];
+  const prediction = document.getElementById('predictionInput').value.trim();
+  const conclusion = document.getElementById('conclusionInput').value.trim();
+  let text = 'BÁO CÁO THÍ NGHIỆM — QUẠT BÀN DIY\n';
+  text += '='.repeat(55) + '\n';
+  text += 'Thời gian: ' + new Date().toLocaleString('vi-VN') + '\n\n';
+  text += 'GIẢ THUYẾT: ' + h.name + '\n';
+  text += 'Câu hỏi khoa học: ' + h.prompt + '\n\n';
+  text += 'DỰ ĐOÁN CỦA EM (Bước 2):\n' + (prediction || '(chưa điền)') + '\n\n';
+  text += 'NHẬT KÝ THÍ NGHIỆM (Bước 4) — ' + expLog.length + ' lần chạy:\n';
+  text += '-'.repeat(55) + '\n';
+  expLog.forEach(e => {
+    const tiltTxt = e.tilt === 'fwd' ? 'trước' : e.tilt === 'flat' ? 'phẳng' : 'sau';
+    const dirTxt = e.tipped ? '' : (e.dir === 'fwd' ? ' →' : e.dir === 'back' ? ' ←' : ' —');
+    const res = e.tipped
+      ? `LẬT (cần ≥${Math.round(e.requiredWeight)}g)`
+      : (e.mag + '%' + dirTxt);
+    text += `#${e.n} | Pin ${e.bat}% | ${e.count} cánh | ${e.pitch}° | ${tiltTxt} | Đế ${e.baseWeight}g | ${res}\n`;
+  });
+  text += '\nKẾT LUẬN CỦA EM (Bước 5):\n' + (conclusion || '(chưa điền)') + '\n';
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bao-cao-thi-nghiem-' + selectedHypo + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   TAB 1 — Part info
+============================================================ */
+const partInfo = {
+  canh:   {name:'🌀 Cánh quạt — 6 cánh', mat:'Thân chai nhựa PET xanh neon, trong, mỏng — cắt từ thân chai và bẻ nghiêng', fn:'Quay theo trục động cơ; vì cánh bẻ nghiêng, mỗi vòng quay đẩy không khí về phía trước, tạo thành gió.'},
+  dongco: {name:'⚙️ Động cơ DC + hub đen', mat:'Động cơ DC mini + trục kim loại; hub / nắp tâm bằng nhựa đen giữ cánh', fn:'Biến điện năng thành chuyển động quay; trục nối thẳng vào tâm cánh nên cánh quay cùng tốc độ với động cơ.'},
+  pin:    {name:'🔋 Hộp pin', mat:'Hộp nhựa đỏ + pin khô bên trong (loại thường dùng: pin AA)', fn:'Cung cấp điện năng cho toàn bộ quạt; cũng là nơi đặt công tắc bật / tắt. Gắn ở mặt sau thân để không cản gió.'},
+  day:    {name:'〰️ Dây điện đỏ–đen', mat:'2 dây điện mảnh bọc nhựa: 1 đỏ, 1 đen', fn:'Dẫn điện từ hộp pin lên động cơ: dây đỏ nối cực (+), dây đen nối cực (−), tạo thành vòng mạch kín.'},
+  than:   {name:'🟥 Thân trụ đỏ', mat:'Thanh / ống nhựa đỏ, thẳng', fn:'Cột đỡ toàn bộ đầu quạt ở độ cao để bàn; nối đế ở dưới với động cơ và hộp pin ở trên.'},
+  nap:    {name:'⬛ Nắp chai đen', mat:'Nắp nhựa gốc của chai + keo dán quanh chân thân', fn:'Khớp nối giữa thân và đế: thân cắm qua lỗ giữa nắp, nắp giữ thân cố định, không xoay.'},
+  de:     {name:'🟢 Đế quạt — đáy chai', mat:'Phần đáy của chai nhựa PET xanh neon (dày và cứng hơn thân chai); đế đang rỗng', fn:'Chân đế rộng giúp quạt đứng vững trên bàn và giữ thăng bằng cho đầu quạt ở trên cao.'}
+};
+
+function showIntroPart(key){
+  const info = partInfo[key];
+  const box = document.getElementById('introPartInfoContent');
+  if(!info || !box) return;
+  document.querySelectorAll('.izone, .izone-line').forEach(z => z.classList.toggle('selected', z.dataset.part === key));
+  box.innerHTML = '<h4>'+info.name+'</h4>'
+    + '<div class="tt-row"><span class="tt-k">Nguyên vật liệu</span><span>'+info.mat+'</span></div>'
+    + '<div class="tt-row"><span class="tt-k">Chức năng</span><span>'+info.fn+'</span></div>';
+}
+
+/* ============================================================
+   QUIZ system
+============================================================ */
+const QUIZZES = {
+  tab1: {
+    listEl: 'quizList1', scoreEl: 'quizScore1',
+    data: [
+      {q:'Đế quạt được làm từ đáy chai PET (rộng, dày hơn thân chai) thay vì cắt từ thân chai (mỏng, cong). Vì sao chọn đáy chai?',
+       o:['Vì phần đáy chai dày và cứng nên cắt ra sẽ nhẹ hơn, dễ uốn cong hơn thân chai',
+       'Vì đáy chai rộng và cứng, giúp quạt đứng vững và chống lật',
+       'Vì đáy chai nằm sát mặt bàn nên tự cân bằng, không cần diện tích tiếp xúc lớn'], a:1,
+       e:'Đế quạt cần diện tích tiếp xúc lớn + độ cứng để chống lật khi cánh quay tạo phản lực. Đáy chai PET có cả hai đặc điểm này — vật liệu và hình dạng đi đôi với chức năng.'},
+      {q:'Cánh quạt làm từ nhựa PET (mỏng, nhẹ, cứng vừa). Nếu thay bằng giấy bìa thì sao?',
+       o:['Giấy nhẹ hơn nhựa nên động cơ quay nhanh hơn, gió tạo ra sẽ mạnh hơn hẳn',
+       'Cánh giấy sẽ cong và mềm khi quay nhanh, không đẩy được khí nên gió yếu, dễ rách',
+       'Giấy bìa cũng cứng gần bằng nhựa PET nên quạt vẫn chạy bền và mát như trước'], a:1,
+       e:'Cánh quạt phải đủ cứng để giữ dạng nghiêng khi quay nhanh. Giấy mềm sẽ biến dạng dưới lực cản không khí → mất dạng cánh → không tạo được lực đẩy.'},
+      {q:'Tâm cánh được gắn trực tiếp vào trục động cơ DC (không qua dây đai / bánh răng). Hệ quả là gì?',
+       o:['Cánh quay cùng tốc độ với động cơ, không mất năng lượng qua bộ truyền',
+       'Cánh quay chậm hơn động cơ vì trục kim loại trơn khiến hub bị trượt',
+       'Cánh quay nhanh hơn động cơ vì hub đen khuếch đại tốc độ quay lên'], a:0,
+       e:'Nối trực tiếp giúp truyền mô-men hiệu quả nhất — không có bộ phận trung gian gây mất mát năng lượng.'},
+      {q:'Quạt này KHÔNG có lồng bảo vệ. Hệ quả kép của việc bỏ lồng là gì?',
+       o:['Chỉ có lợi: bỏ lồng giúp gió mạnh hơn, quạt nhẹ hơn và cũng dễ vệ sinh hơn',
+       'Chỉ có hại: bỏ lồng làm quạt nguy hiểm hơn hẳn và tuổi thọ cũng giảm đi',
+       'Vừa lợi (gió mạnh hơn vì không bị cản) vừa hại (nguy hiểm khi cánh quay nhanh)'], a:2,
+       e:'Mọi thiết kế đều có đánh đổi. Bỏ lồng giúp gió mạnh hơn nhưng mất an toàn — tư duy "trade-off" quan trọng trong kỹ thuật.'},
+      {q:'Hộp pin được gắn ở mặt SAU thân, không phải mặt trước. Vì sao?',
+       o:['Để hộp pin khuất tầm nhìn, nhìn quạt gọn và đẹp hơn từ phía trước',
+       'Để khi thay pin, người dùng đứng phía sau quạt thao tác thuận tay hơn',
+       'Không cản gió ra phía trước và cân bằng khối lượng với đầu quạt'], a:2,
+       e:'Vị trí lắp đặt phải tính đến luồng khí và cân bằng. Đặt sau thân vừa tránh cản gió vừa tạo đối trọng, giúp quạt ổn định.'},
+      {q:'Quạt dùng 2 dây (đỏ và đen) thay vì 1 dây. Vì sao?',
+       o:['Vì dòng điện cần mạch kín: một dây đưa điện đến, một dây đưa điện về',
+       'Vì một sợi dây không đủ chắc, hai dây giúp mối nối bền và khó bị tuột hơn',
+       'Vì hai dây dẫn song song nhau giúp dòng điện chạy nhanh gấp đôi bình thường'], a:0,
+       e:'Dòng điện chỉ chạy khi có mạch kín. Hai dây tạo thành đường đi khép kín từ cực (+) → động cơ → cực (−).'},
+      {q:'Nắp chai được dùng làm khớp nối giữa thân và đế. Vì sao dùng nắp thay vì dán trực tiếp?',
+       o:['Vì nắp vừa khít lỗ trên đế, giữ thân chắc mà vẫn tháo lắp được',
+       'Vì nắp chai nhẹ hơn keo dán nên quạt mang đi lại nhẹ nhàng hơn',
+       'Vì nắp chai có ren xoáy nên thân tự đứng thẳng không cần giữ thêm'], a:0,
+       e:'Nắp chai tận dụng đúng kích thước có sẵn — vừa khít lỗ trên đế vừa cho phép tháo lắp. Tái sử dụng vật liệu thông minh.'},
+      {q:'Quạt này CHỈ thổi 1 hướng cố định, không có cơ cấu quay qua lại (oscillate). Hệ quả là gì?',
+       o:['Chỉ có hại: người ngồi lệch hướng sẽ không mát, còn lại không khác gì',
+       'Chỉ có lợi: quạt đơn giản hơn, tốn ít pin hơn và gió tập trung mạnh hơn',
+       'Vừa hại (không phủ gió rộng) vừa lợi (đơn giản, ít tốn pin, ít hỏng hóc)'], a:2,
+       e:'Thiết kế cố định giảm chi phí và tiêu thụ điện nhưng giảm vùng phủ gió. Lại là trade-off — lựa chọn phụ thuộc mục đích.'},
+      {q:'Cánh quạt được bẻ nghiêng (không phẳng). Nếu cánh hoàn toàn phẳng (0°) thì sao?',
+       o:['Cánh quay mà không đẩy được không khí → không tạo ra gió có hướng',
+       'Gió vẫn mạnh như thường vì cánh phẳng cản gió ít hơn cánh nghiêng',
+       'Cánh quay chậm hơn hẳn vì mặt phẳng chịu lực cản lớn nhất có thể'], a:0,
+       e:'Cánh phẳng không có mặt chéo để "xúc" không khí — nó chỉ cắt ngang qua không khí. Độ nghiêng là điều kiện cần để tạo lực đẩy dọc trục.'},
+      {q:'Muốn quạt thổi MẠNH HƠN mà KHÔNG đổi pin, dựa vào cấu trúc em có thể làm gì?',
+       o:['Sơn cánh màu tối để cánh nóng lên, không khí quanh quạt sẽ tự chuyển động mạnh hơn',
+       'Tăng số cánh, tăng chiều dài cánh hoặc chỉnh góc nghiêng về ~40–45° đều giúp gió mạnh hơn',
+       'Chỉ tăng số cánh mới có tác dụng, còn góc nghiêng và chiều dài cánh không ảnh hưởng gì'], a:1,
+       e:'Có nhiều cách tăng gió mà không đổi nguồn: (1) tăng số cánh → mỗi vòng đẩy nhiều khí hơn; (2) chỉnh góc nghiêng tối ưu; (3) tăng chiều dài cánh → quét diện tích lớn hơn.'},
+    ]
+  },
+  tab2: {
+    listEl: 'quizList2', scoreEl: 'quizScore2',
+    data: [
+      {q:'Khi công tắc MỞ (TẮT), điều gì xảy ra với dòng điện?',
+       o:['Dòng điện vẫn chạy nhưng yếu hơn nhiều vì khe hở của công tắc cản trở',
+       'Mạch bị hở → không có dòng điện → động cơ dừng',
+       'Dòng điện đổi chiều và chạy ngược về phía cực âm của pin nguồn'], a:1,
+       e:'Công tắc mở tạo ra khoảng hở trong mạch. Dòng điện cần đường dẫn liên tục — hở ở bất kỳ đâu thì toàn mạch mất dòng.'},
+      {q:'Dây đỏ nối với cực nào của pin, dây đen nối với cực nào?',
+       o:['Đỏ → cực (+), đen → cực (−)',
+       'Đỏ → cực (−), đen → cực (+)',
+       'Cả hai dây đều nối vào cực (+)'], a:0,
+       e:'Quy ước: đỏ = dương (+), đen = âm (−). Đây là quy ước phổ biến giúp dễ nhận biết chiều dòng.'},
+      {q:'Nếu 1 trong 2 dây bị đứt, quạt có chạy không?',
+       o:['Vẫn chạy bình thường vì sợi dây còn lại vẫn dẫn điện đến động cơ',
+       'Chạy yếu hơn một nửa vì chỉ còn một nửa đường đi của dòng điện',
+       'Không chạy — mạch hở tại điểm đứt nên toàn bộ vòng mất dòng điện'], a:2,
+       e:'Mạch điện là vòng kín — chỉ cần đứt 1 điểm là toàn bộ vòng bị hở. Lý do kỹ thuật viên kiểm tra dây trước tiên khi quạt "chết".'},
+      {q:'Tại sao cần mạch KÍN thì quạt mới chạy?',
+       o:['Vì dòng điện cần đường đi liên tục từ cực (+) qua động cơ về cực (−)',
+       'Vì nếu mạch hở, pin sẽ tự xả điện ra ngoài không khí và hết rất nhanh',
+       'Vì công tắc chỉ đóng mở được khi hai đầu dây đã nối kín với nhau sẵn'], a:0,
+       e:'Định nghĩa cơ bản: dòng điện chỉ tồn tại khi có đường dẫn khép kín. Hở = không có dòng = không có năng lượng đến động cơ.'},
+      {q:'Nếu đảo chiều pin (đổi cực + và −), điều gì xảy ra với động cơ DC thường?',
+       o:['Động cơ quay nhanh hơn vì cực mới tạo ra lực đẩy mạnh hơn trước',
+       'Dòng điện đổi chiều → động cơ quay ngược lại',
+       'Động cơ không quay vì pin đã bị lắp ngược với chiều quy định sẵn'], a:1,
+       e:'Động cơ DC thường đảo chiều quay khi đảo cực pin — vì chiều dòng qua cuộn dây đổi, lực từ đổi chiều.'},
+      {q:'Các chấm vàng chạy trên dây trong sơ đồ tượng trưng cho gì?',
+       o:['Điện áp — áp lực đẩy các điện tích chạy dọc theo hai sợi dây',
+       'Nhiệt lượng tỏa ra khi dòng điện chạy qua dây dẫn điện này',
+       'Dòng điện — các điện tích di chuyển có hướng dọc theo dây'], a:2,
+       e:'Chấm vàng động mô phỏng các điện tích di chuyển có hướng — đó chính là dòng điện. Điện áp là "áp lực" đẩy dòng, không phải dòng.'},
+      {q:'Nếu nối tắt (bỏ qua động cơ, nối thẳng dây đỏ với dây đen), điều gì xảy ra?',
+       o:['Quạt chạy nhanh hơn hẳn vì dòng điện không còn bị động cơ cản trở',
+       'Pin bị đoản mạch — dòng rất lớn, pin nóng lên và có thể hỏng',
+       'Không có gì xảy ra vì mạch lúc này vẫn kín như khi quạt chạy'], a:1,
+       e:'Nối tắt tạo mạch kín nhưng không có tải → dòng rất lớn → pin nóng, có thể cháy. Không bao giờ nối tắt hai cực pin.'},
+      {q:'Tại sao cần có công tắc trong mạch?',
+       o:['Để điều chỉnh tốc độ quay của quạt nhanh hay chậm tùy ý muốn',
+       'Để tăng điện áp của pin lên mức cao hơn cho động cơ hoạt động',
+       'Để đóng và ngắt mạch — bật tắt quạt mà không cần tháo pin ra'], a:2,
+       e:'Công tắc là "cầu dao" — đóng thì mạch kín (chạy), mở thì mạch hở (dừng). Cho phép điều khiển quạt mà không cần tháo pin.'},
+      {q:'Công tắc được đặt trên hộp pin (gần nguồn). Vì sao vị trí này hợp lý?',
+       o:['Gần nguồn → dễ thao tác khi thay pin và dây dẫn tới công tắc ngắn hơn',
+       'Vì công tắc chỉ đóng ngắt được dòng điện khi nó đặt thật gần nguồn điện',
+       'Vì đặt xa nguồn thì dòng điện yếu đi trước khi kịp tới được công tắc'], a:0,
+       e:'Đặt công tắc gần nguồn giúp: (1) dễ thao tác khi thay pin, (2) đoạn dây ngắn (giảm hao phí), (3) tập trung phần điều khiển về một chỗ.'},
+      {q:'Quan sát sơ đồ: dòng điện chạy theo chiều nào?',
+       o:['Từ cực (−) qua động cơ rồi mới đến cực (+)',
+       'Từ cực (+) → công tắc → động cơ → về cực (−)',
+       'Chạy qua lại hai chiều luân phiên liên tục'], a:1,
+       e:'Quy ước: dòng điện đi từ cực (+) qua mạch ngoài về cực (−). Đây là chiều quy ước — mũi tên trong sơ đồ đi theo chiều này.'},
+    ]
+  }
+};
+
+QUIZZES.tab1.answered = {}; QUIZZES.tab1.correct = 0;
+QUIZZES.tab2.answered = {}; QUIZZES.tab2.correct = 0;
+
+function renderQuiz(key){
+  const q = QUIZZES[key];
+  const list = document.getElementById(q.listEl);
+  if(!list) return;
+  list.innerHTML = '';
+  q.data.forEach((item, qi) => {
+    const box = document.createElement('div'); box.className = 'quiz-q';
+    let html = '<h4>Câu ' + (qi+1) + ': ' + item.q + '</h4><div class="quiz-opts">';
+    const order = item.o.map((_, i) => i);
+    for(let i = order.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const tmp = order[i]; order[i] = order[j]; order[j] = tmp; }
+    order.forEach(oi => {
+      html += '<button type="button" class="quiz-opt" data-oi="' + oi + '" onclick="answerQuiz(\'' + key + '\',' + qi + ',' + oi + ',this)">' + item.o[oi] + '</button>';
+    });
+    html += '</div><div class="quiz-exp"></div>';
+    box.innerHTML = html;
+    list.appendChild(box);
+  });
+  updateQuizScore(key);
+}
+
+function answerQuiz(key, qi, oi, btn){
+  const q = QUIZZES[key];
+  if(q.answered[qi]) return;
+  q.answered[qi] = true;
+  const item = q.data[qi];
+  const box = btn.closest('.quiz-q');
+  box.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; if(+b.dataset.oi === item.a) b.classList.add('correct'); });
+  if(oi === item.a) q.correct++; else btn.classList.add('wrong');
+  const exp = box.querySelector('.quiz-exp');
+  exp.textContent = (oi === item.a ? '✅ Đúng! ' : '❌ Chưa đúng — đáp án đúng đã được tô xanh. ') + item.e;
+  exp.classList.add('show');
+  updateQuizScore(key);
+}
+
+function resetQuiz(key){
+  QUIZZES[key].answered = {};
+  QUIZZES[key].correct = 0;
+  renderQuiz(key);
+}
+
+function updateQuizScore(key){
+  const q = QUIZZES[key];
+  const el = document.getElementById(q.scoreEl);
+  if(!el) return;
+  const done = Object.keys(q.answered).length;
+  el.textContent = q.correct + '/' + q.data.length + ' câu đúng' + (done === q.data.length ? ' ✓' : '');
+  el.className = 'badge ' + (q.correct >= q.data.length * 0.7 ? 'on' : 'neutral');
+  checkGatePass(key);
+}
+
+/* ============================================================
+   GATE — must score >= 70% on a tab's quiz to unlock the next tab.
+   Once a tab is unlocked it STAYS unlocked (latched + persisted).
+============================================================ */
+const GATE = {
+  tab1: { unlocks: 't2', btn: 't0', note: 'gateNote1', nextLabel: 'Tab 2: Sơ đồ mạch điện' },
+  tab2: { unlocks: 't1', btn: 't2', note: 'gateNote2', nextLabel: 'Tab 3: Thí nghiệm' }
+};
+const GATE_KEY = 'diyFanGateV1';
+let unlockedTabs = new Set(['t0']);
+let passedQuizzes = new Set();
+try {
+  const saved = JSON.parse(localStorage.getItem(GATE_KEY) || 'null');
+  if(saved){
+    (saved.u || []).forEach(id => unlockedTabs.add(id));
+    (saved.p || []).forEach(k => passedQuizzes.add(k));
+  }
+} catch(e) { /* storage unavailable — gating still works for this session */ }
+function saveGate(){
+  try { localStorage.setItem(GATE_KEY, JSON.stringify({ u: [...unlockedTabs], p: [...passedQuizzes] })); } catch(e) {}
+}
+function isUnlocked(id){ return id === 't0' || unlockedTabs.has(id); }
+let gateToastTimer = null;
+function showGateToast(msg){
+  const el = document.getElementById('gateToast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(gateToastTimer);
+  gateToastTimer = setTimeout(() => el.classList.remove('show'), 3400);
+}
+function applyGateUI(){
+  const passedBtns = new Set();
+  Object.keys(GATE).forEach(k => { if(passedQuizzes.has(k)) passedBtns.add(GATE[k].btn); });
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('locked', !isUnlocked(b.dataset.tab));
+    b.classList.toggle('passed', passedBtns.has(b.dataset.tab));
+  });
+  Object.keys(GATE).forEach(k => {
+    const g = GATE[k];
+    const el = document.getElementById(g.note);
+    if(!el) return;
+    const total = QUIZZES[k].data.length;
+    const need = Math.ceil(total * 0.7);
+    if(isUnlocked(g.unlocks)){
+      el.className = 'gate-note open';
+      el.innerHTML = '🎉 <b>' + g.nextLabel + '</b> đã được mở — em đã đạt tối thiểu 70% ở trắc nghiệm này. Tab đã mở sẽ luôn giữ nguyên, em quay lại tự do bất cứ lúc nào.';
+    } else {
+      el.className = 'gate-note';
+      el.innerHTML = '🔒 Đạt tối thiểu <b>70%</b> (' + need + '/' + total + ' câu đúng) ở trắc nghiệm này để mở <b>' + g.nextLabel + '</b>.';
+    }
+  });
+}
+function checkGatePass(key){
+  const g = GATE[key];
+  if(!g || passedQuizzes.has(key)) return;
+  const q = QUIZZES[key];
+  if(q.correct / q.data.length >= 0.7){
+    passedQuizzes.add(key);
+    unlockedTabs.add(g.unlocks);
+    saveGate();
+    applyGateUI();
+    showGateToast('🎉 Đạt ' + q.correct + '/' + q.data.length + ' câu đúng (≥ 70%) — ' + g.nextLabel + ' đã được mở!');
+  }
+}
+
+/* ============================================================
+   TAB 2 — Circuit
+============================================================ */
+let circuitOn = true;
+function toggleCircuit(){
+  circuitOn = !circuitOn;
+  const flow = document.getElementById('currentFlow');
+  const lever = document.getElementById('switchLever');
+  const track = document.getElementById('battTrack');
+  const knob = document.getElementById('battKnob');
+  const label = document.getElementById('battLabel');
+  const badge = document.getElementById('circuitBadge');
+  const status = document.getElementById('circuitStatus');
+  const swState = document.getElementById('switchState');
+  const motorFan = document.getElementById('motorFan');
+  const motorGroup = document.getElementById('motorGroup');
+  const motorBox = document.getElementById('motorBox');
+  if(circuitOn){
+    flow.style.display = '';
+    lever.classList.remove('open'); lever.setAttribute('stroke','#16a34a');
+    track.setAttribute('fill','#16a34a'); knob.setAttribute('cx','100'); label.setAttribute('x','60'); label.textContent='BẬT';
+    badge.textContent='● DÒNG ĐIỆN ĐANG CHẠY'; badge.className='badge on';
+    swState.textContent='ĐÓNG — mạch kín'; swState.setAttribute('fill','#166534');
+    motorFan.classList.add('spinning'); motorFan.classList.remove('stopped');
+    motorGroup.classList.add('motor-pulse');
+    motorBox.setAttribute('fill','#e0f2fe'); motorBox.setAttribute('stroke','#0284c7');
+    status.className='good';
+    status.innerHTML='● <b>Dòng điện đang chạy:</b> Pin (+) → dây đỏ → công tắc (đóng) → động cơ DC quay → dây đen → về pin (−).';
+  } else {
+    flow.style.display = 'none';
+    lever.classList.add('open'); lever.setAttribute('stroke','#dc2626');
+    track.setAttribute('fill','#dc2626'); knob.setAttribute('cx','42'); label.setAttribute('x','76'); label.textContent='TẮT';
+    badge.textContent='○ DÒNG ĐIỆN ĐÃ NGẮT'; badge.className='badge off';
+    swState.textContent='MỞ — mạch hở'; swState.setAttribute('fill','#b91c1c');
+    motorFan.classList.remove('spinning'); motorFan.classList.add('stopped');
+    motorGroup.classList.remove('motor-pulse');
+    motorBox.setAttribute('fill','#f1f5f9'); motorBox.setAttribute('stroke','#94a3b8');
+    status.className='offbox';
+    status.innerHTML='○ <b>Dòng điện đã ngắt:</b> Công tắc TẮT — vòng mạch bị cắt, không có chấm vàng trên dây, động cơ dừng quay.';
+  }
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+function init(){
+  buildBlades('bladeSet', 200, 118, 6);
+  buildBlades('introBladeSet', 200, 118, 6);
+  document.querySelectorAll('.izone, .izone-line').forEach(z => {
+    z.addEventListener('mouseenter', () => showIntroPart(z.dataset.part));
+    z.addEventListener('click', () => showIntroPart(z.dataset.part));
+  });
+  renderQuiz('tab1');
+  renderQuiz('tab2');
+  applyGateUI();
+  renderLog();
+  updateFan();
+  const autoRunBtn = document.getElementById('autoRunBtn');
+  if(autoRunBtn) autoRunBtn.disabled = true;
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
