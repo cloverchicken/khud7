@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dự án làm hoa khô</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pri:#4f46e5; --pri-dark:#3730a3; --pri-50:#eef2ff; --pri-100:#e0e7ff; --pri-200:#c7d2fe;
+  --ok:#059669; --ok-50:#ecfdf5; --warn:#d97706; --warn-50:#fffbeb; --bad:#dc2626; --bad-50:#fef2f2;
+  --ink:#1e293b; --ink2:#475569; --ink3:#94a3b8; --line:#e2e8f0; --bg:#f8f7ff; --card:#ffffff;
+  --rose:#e11d48; --amber:#f59e0b; --teal:#0d9488;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:15.5px}
+a{color:var(--pri)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 64px}
+.sim-layout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.factor-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+@media(max-width:900px){.factor-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.factor-grid{grid-template-columns:repeat(2,1fr)}}
+.factor2{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 8px;cursor:pointer;transition:.15s;text-align:center;font-weight:700;font-size:15px}
+.factor2:hover{border-color:var(--pri-200);color:var(--pri)}
+.factor2.active{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 4px 14px rgba(79,70,229,.28)}
+.factor2 .fi{display:block;font-size:25px;margin-bottom:4px}
+.sim-desc{background:var(--pri-50);border:1px solid var(--pri-100);border-radius:12px;padding:12px 15px;margin-bottom:12px}
+.sim-desc b{display:block;margin-bottom:2px;font-size:15.5px}
+.sim-desc p{margin:0;font-size:14px;white-space:nowrap}
+@media(max-width:900px){.sim-desc p{white-space:normal}}
+.ch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:720px){.ch-grid{grid-template-columns:1fr 1fr}}
+.sim-panel{background:#fff;border:1.5px solid var(--pri-200);border-radius:14px;padding:16px 18px;box-shadow:0 6px 20px rgba(79,70,229,.08)}
+.sim-panel h3{margin:0 0 6px}
+.sim-stage{background:linear-gradient(180deg,#fdf4ff,#eef2ff);border:1px dashed var(--pri-200);border-radius:12px;padding:8px;text-align:center}
+.sim-ctl{display:none;margin:12px 0}
+.sim-ctl.show{display:block}
+.sim-ctl label{font-weight:600;font-size:13.5px;display:block;margin-bottom:3px}
+.sim-toprow{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:stretch}
+.sim-toprow .sim-stage{display:flex;align-items:center;justify-content:center}
+.sim-toprow .sim-verdict{margin-top:0}
+@media(max-width:720px){.sim-toprow{grid-template-columns:1fr}}
+.sim-verdict{border-radius:12px;padding:12px 15px;margin-top:12px}
+.sim-verdict.good{background:var(--ok-50);border:1.5px solid #a7f3d0}
+.sim-verdict.mid{background:var(--warn-50);border:1.5px solid #fde68a}
+.sim-verdict.bad{background:var(--bad-50);border:1.5px solid #fecaca}
+.sim-verdict b{font-size:16px}
+#simFeedback{list-style:none;padding-left:0;margin-left:0}
+.rb-row{display:flex;align-items:center;gap:14px}
+@media(max-width:640px){.rb-row{flex-wrap:wrap}}
+.sim-verdict .meter{margin:6px 0}
+/* Header */
+header.hero{position:relative;overflow:hidden;color:#fff;border-radius:0 0 32px 32px;padding:40px 0 36px;margin-bottom:22px;background:linear-gradient(120deg,#4338ca 0%,#6d28d9 45%,#a21caf 80%,#db2777 115%);box-shadow:0 12px 32px -12px rgba(109,40,217,.45)}
+header.hero::before,header.hero::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+header.hero::before{width:340px;height:340px;right:-90px;top:-150px;background:radial-gradient(circle,rgba(255,255,255,.28),rgba(255,255,255,0) 65%)}
+header.hero::after{width:260px;height:260px;left:-70px;bottom:-150px;background:radial-gradient(circle,rgba(255,182,213,.35),rgba(255,182,213,0) 65%)}
+.hero-inner{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 16px}
+.hero h1{margin:0;font-size:32px;line-height:1.25;font-weight:800;letter-spacing:.2px;display:flex;align-items:center;gap:14px;text-shadow:0 2px 14px rgba(49,10,101,.35)}
+.hero h1 .hicon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;flex:none;font-size:29px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.45);border-radius:17px;backdrop-filter:blur(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 16px -6px rgba(49,10,101,.5)}
+.hero p.sub{margin:0;opacity:.92;max-width:760px;font-size:16px}
+.hero .meta{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:500}
+.chip.light{background:#fff;color:var(--pri-dark);border-color:#fff}
+/* Progress */
+.progress-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.progress-steps{display:flex;flex-wrap:wrap;gap:8px}
+.pstep{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink3);padding:6px 12px;border-radius:999px;border:1.5px dashed var(--line);background:#fff}
+.pstep .dot{width:20px;height:20px;border-radius:50%;background:var(--line);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.pstep.done{color:var(--ok);border-color:var(--ok);border-style:solid;background:var(--ok-50)}
+.pstep.done .dot{background:var(--ok)}
+.pstep.now{color:var(--pri);border-color:var(--pri);border-style:solid;background:var(--pri-50)}
+.pstep.now .dot{background:var(--pri)}
+/* Tabs */
+.tabs{position:sticky;top:0;z-index:40;background:var(--bg);padding:10px 0 8px}
+.tab-rail{display:flex;gap:8px;flex-wrap:wrap}
+.tab-btn{appearance:none;border:1.5px solid var(--line);background:#fff;color:var(--ink2);font-family:inherit;font-weight:600;font-size:14.5px;padding:9px 16px;border-radius:999px;cursor:pointer;transition:.15s}
+.tab-btn:hover{border-color:var(--pri-200);color:var(--pri)}
+.tab-btn.active{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 4px 14px rgba(79,70,229,.28)}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* Cards & layout */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px}
+.card h2{margin:0 0 10px;font-size:21px;line-height:1.35}
+.card h3{margin:18px 0 8px;font-size:16.5px}
+.card h3:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}.hero h1{font-size:24px}}
+.goal{background:var(--pri-50);border:1px solid var(--pri-100);border-radius:12px;padding:14px 16px}
+.goal.ok{background:var(--ok-50);border-color:#a7f3d0}
+.goal.warn{background:var(--warn-50);border-color:#fde68a}
+.goal.bad{background:var(--bad-50);border-color:#fecaca}
+.note{font-size:13.5px;color:var(--ink2)}
+.small{font-size:13px;color:var(--ink2)}
+ul.tight{margin:6px 0;padding-left:20px}
+ul.tight li{margin:4px 0}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--pri-50);color:var(--pri-dark);margin:2px 3px 2px 0}
+.tag.green{background:var(--ok-50);color:#065f46}
+.tag.amber{background:var(--warn-50);color:#92400e}
+.tag.rose{background:#fff1f2;color:#9f1239}
+.tag.grape{background:#f3e8ff;color:#6b21a8}
+.tag.sky{background:#e0f2fe;color:#075985}
+.tag.teal{background:#ccfbf1;color:#115e59}
+/* Factor cards */
+.factor{text-align:left}
+.factor .big{font-size:26px}
+.factor b{display:block;margin:4px 0 2px}
+/* Method cards */
+.mfilter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.mfilter button{appearance:none;font-family:inherit;font-size:13.5px;font-weight:600;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink2);cursor:pointer}
+.mfilter button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.method{border:1px solid var(--line);border-radius:var(--radius);background:#fff;margin-bottom:16px;overflow:hidden}
+.method-head{display:flex;gap:16px;padding:18px 20px;cursor:pointer;align-items:flex-start}
+.method-head:hover{background:#fafaff}
+.method-num{flex:none;width:42px;height:42px;border-radius:12px;background:var(--pri);color:#fff;font-weight:800;font-size:19px;display:flex;align-items:center;justify-content:center}
+.method-head h3{margin:0;font-size:18px}
+.method-head .en{color:var(--ink3);font-size:13px;font-weight:500}
+.method-body{display:none;border-top:1px solid var(--line);padding:18px 20px;background:#fff}
+.method.open .method-body{display:block}
+.method .chev{margin-left:auto;color:var(--ink3);font-size:20px;flex:none;transition:.2s}
+.method.open .chev{transform:rotate(180deg)}
+.diagram{background:linear-gradient(180deg,#fdf4ff,#eef2ff);border:1px dashed var(--pri-200);border-radius:12px;padding:14px;text-align:center;margin-bottom:12px}
+.method-body .grid2>div:first-child .diagram{padding:8px;margin-bottom:6px}
+.method-body .grid2>div:first-child .diagram svg{width:250px;height:auto}
+.method-body .grid2>div:first-child h3{margin:8px 0 3px}
+.method-body .grid2>div:first-child p{margin:3px 0}
+.cmp-sel{width:100%;min-width:150px;padding:7px 9px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+.cmp-sel.ok{border-color:var(--ok);background:#f0fdf4}
+.cmp-sel.bad{border-color:#dc2626;background:#fef2f2}
+.meter{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0}
+.meter .lbl{width:118px;flex:none;color:var(--ink2)}
+.meter .bar{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.meter .fill{height:100%;border-radius:99px;background:var(--pri)}
+.meter .fill.g{background:var(--ok)} .meter .fill.a{background:var(--amber)}
+.optbox{background:var(--ok-50);border:1.5px solid #a7f3d0;border-radius:12px;padding:13px 16px;margin-top:12px}
+.optbox b{color:#065f46}
+.steps{counter-reset:st;margin:8px 0;padding:0;list-style:none}
+.steps li{counter-increment:st;position:relative;padding:7px 0 7px 40px;border-bottom:1px dashed var(--line)}
+.steps li:last-child{border-bottom:none}
+.steps li::before{content:counter(st);position:absolute;left:0;top:7px;width:26px;height:26px;border-radius:50%;background:var(--pri-50);color:var(--pri-dark);font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center}
+/* Table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th{background:var(--pri-50);color:var(--pri-dark);text-align:left;padding:10px 12px;font-size:13.5px;white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+tr.hl td{background:var(--warn-50)}
+/* Forms */
+label.fl{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+label.fl:first-child{margin-top:0}
+input[type=text],input[type=date],select,textarea{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri-200);border-color:var(--pri)}
+textarea{resize:vertical;min-height:64px}
+.radio-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:700px){.radio-grid{grid-template-columns:1fr}}
+.radio-card{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;background:#fff}
+.radio-card:hover{border-color:var(--pri-200)}
+.radio-card.sel{border-color:var(--pri);background:var(--pri-50);box-shadow:0 0 0 1px var(--pri)}
+.radio-card input{margin-top:4px;accent-color:var(--pri)}
+.radio-card b{display:block;font-size:14.5px}
+.radio-card span{font-size:13px;color:var(--ink2)}
+.btn{appearance:none;font-family:inherit;font-weight:700;font-size:15px;padding:12px 22px;border-radius:12px;border:none;background:var(--pri);color:#fff;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--pri-dark)}
+.btn.sec{background:#fff;color:var(--pri);border:1.5px solid var(--pri-200)}
+.btn.sec:hover{background:var(--pri-50)}
+.btn.ghost{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:8px 14px;font-size:13.5px;border-radius:10px}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:7px 0;cursor:pointer}
+.check input{margin-top:4px;width:17px;height:17px;accent-color:var(--ok);flex:none}
+.result-box{display:none;margin-top:16px}
+.result-box.show{display:block;animation:fade .3s ease}
+.verdict{font-size:19px;font-weight:800;margin:0 0 4px}
+.kbd{background:#f1f5f9;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 6px;font-size:13px;font-weight:600}
+/* Quiz */
+.quiz-q{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.quiz-q b{display:block;margin-bottom:8px}
+.quiz-q label{display:block;padding:5px 0;cursor:pointer;font-size:14.5px}
+.quiz-q input{accent-color:var(--pri);margin-right:8px}
+.quiz-q .expl{display:none;margin-top:8px;font-size:13.5px;background:var(--ok-50);border-radius:8px;padding:9px 12px}
+.quiz-q.done .expl{display:block}
+.quiz-q.done{border-color:#a7f3d0}
+/* Plan print */
+#printArea{display:none}
+@media print{
+  body{background:#fff}
+  header.hero,.tabs,.no-print{display:none !important}
+  .tab-panel{display:none !important}
+  #printArea{display:block !important}
+  #printArea h1{font-size:20px;margin:0 0 4px}
+  #printArea h2{font-size:15px;margin:16px 0 6px;border-bottom:2px solid #333;padding-bottom:3px}
+  #printArea table{font-size:12.5px}
+  #printArea th{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.footer-note{margin-top:26px;font-size:13px;color:var(--ink2);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.3s;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast.show{transform:translateX(-50%);opacity:1}
+.score-badge{display:inline-block;background:var(--pri);color:#fff;font-weight:800;border-radius:10px;padding:3px 12px;font-size:14px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1>Dự án làm hoa khô</h1>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="tabs no-print">
+    <div class="tab-rail" role="tablist">
+      <button class="tab-btn active" data-tab="t1" role="tab">1 · Nguyên lý</button>
+      <button class="tab-btn" data-tab="t2" role="tab">2 · 5 phương pháp</button>
+      <button class="tab-btn" data-tab="t3" role="tab">3 · Chọn điều kiện tối ưu</button>
+      <button class="tab-btn" data-tab="t4" role="tab">4 · Kế hoạch tại nhà</button>
+      <button class="tab-btn" data-tab="t5" role="tab">5 · Theo dõi &amp; đánh giá</button>
+    </div>
+  </nav>
+
+  <!-- ============ TAB 1 ============ -->
+  <section class="tab-panel active" id="t1">
+    <div class="card">
+      <h2>Sấy khô hoa là làm cho nước rời khỏi hoa - một cách có kiểm soát</h2>
+      <p>Hoa tươi chứa rất nhiều nước trong cánh và thân. Khi nước thoát ra <b>từ từ và đều</b>, cánh hoa giữ được hình dáng; đồng thời môi trường khô khiến nấm mốc và vi khuẩn khó phát triển, nên hoa không thối. Ngược lại, nếu hoa khô quá chậm trong nơi ẩm và bí, mốc sẽ đến trước khi hoa kịp khô; nếu khô quá gắt (nhiệt cao, quay quá lâu), cánh sẽ cháy, giòn vụn hoặc mất màu.</p>
+      <p class="note">Vì vậy “điều kiện tối ưu” không phải là một con số chung cho mọi loài hoa - nó là <b>sự kết hợp phù hợp</b> giữa phương pháp, loài hoa, và điều kiện nơi em thực hiện. Đó chính là quyết định nhóm em phải đưa ra ở Tab 3.</p>
+    </div>
+
+    <div class="card">
+      <h2>Các yếu tố ảnh hưởng đến quá trình làm hoa khô</h2>
+      <p><b>Hướng dẫn:</b> HS chọn một thẻ điều kiện ở hàng thẻ dưới đây - lựa chọn các điều kiện khác nhau để xem kết quả hoa khô. Lần lượt kiểm tra cả 6 điều kiện để hoàn thành thử thách sau.</p>
+      <div class="sim-layout">
+        <div class="factor-grid">
+          <div class="factor2 active" data-sim="simTemp">Nhiệt độ</div>
+          <div class="factor2" data-sim="simHum">Độ ẩm không khí</div>
+          <div class="factor2" data-sim="simLight">Ánh sáng</div>
+          <div class="factor2" data-sim="simWindSel">Thông gió</div>
+          <div class="factor2" data-sim="simTime">Thời gian</div>
+          <div class="factor2" data-sim="simPetal">Đặc điểm của hoa</div>
+        </div>
+        <div class="sim-panel" id="simPanel">
+          <h3>Mô phỏng: thay đổi điều kiện, xem hoa biến đổi</h3>
+          <div class="sim-ctl" id="ctl-simTemp"><label> Nhiệt độ nơi sấy</label><select id="simTemp"><option value="cold">Lạnh (phòng lạnh, mùa mưa lạnh)</option><option value="warm" selected>Ấm vừa (khoảng 25-38°C)</option><option value="hot">Quá nóng (lò nhiệt cao, quay quá lâu)</option></select></div>
+          <div class="sim-ctl" id="ctl-simHum"><label> Độ ẩm không khí</label><select id="simHum"><option value="dry" selected>Khô ráo</option><option value="normal">Bình thường</option><option value="humid">Ẩm cao (mưa nhiều ngày, gần nhà tắm)</option></select></div>
+          <div class="sim-ctl" id="ctl-simLight"><label> Ánh sáng</label><select id="simLight"><option value="dark" selected>Tối / râm mát</option><option value="light">Sáng vừa (gần cửa sổ, không nắng trực tiếp)</option><option value="sun">Nắng gắt chiếu trực tiếp</option></select></div>
+          <div class="sim-ctl" id="ctl-simWindSel"><label> Thông gió</label><select id="simWindSel"><option value="good" selected>Thoáng gió tốt, các bó cách nhau</option><option value="low">Ít gió (phòng ít mở cửa)</option><option value="sealed">Bí kín (hộp/tủ đóng chặt, bó treo sát nhau)</option></select></div>
+          <div class="sim-ctl" id="ctl-simTime"><label> Thời gian sấy</label><select id="simTime"><option value="early">Lấy ra quá sớm</option><option value="right" selected>Vừa đủ (cánh vừa giòn như giấy)</option><option value="long">Để quá lâu sau khi đã khô</option></select></div>
+          <div class="sim-ctl" id="ctl-simPetal"><label> Loại cánh hoa</label><select id="simPetal"><option value="thin">Cánh mỏng (hoa mùa xuân)</option><option value="medium" selected>Cánh vừa (hoa hồng, cúc)</option><option value="thick">Cánh dày, mọng nước</option></select></div>
+          <div class="sim-toprow">
+          <div class="sim-stage">
+            <svg width="260" height="170" viewBox="0 0 260 170" aria-label="Hoa mô phỏng thay đổi theo điều kiện">
+              <g id="simSun" opacity="0.06"><circle cx="224" cy="26" r="14" fill="#f59e0b"/><g stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"><line x1="224" y1="4" x2="224" y2="9"/><line x1="224" y1="43" x2="224" y2="48"/><line x1="202" y1="26" x2="207" y2="26"/><line x1="241" y1="26" x2="246" y2="26"/><line x1="209" y1="11" x2="212" y2="14"/><line x1="236" y1="38" x2="239" y2="41"/><line x1="239" y1="11" x2="236" y2="14"/><line x1="212" y1="38" x2="209" y2="41"/></g></g>
+              <g id="simWind" opacity="0.9" stroke="#38bdf8" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M8 52 q22 -8 40 0"/><path d="M8 72 q22 -8 40 0"/><path d="M8 92 q22 -8 40 0"/></g>
+              <g id="simFlower">
+                <path id="simStem" d="M130 78 q4 34 -2 62" stroke="#059669" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <path d="M128 118 q-20 -4 -26 -20 q18 0 26 12z" fill="#34d399"/>
+                <g id="simPetals">
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(45 130 62)"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(90 130 62)"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(135 130 62)"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(180 130 62)"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(225 130 62)"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(270 130 62)"/>
+                  <ellipse class="sp" cx="130" cy="42" rx="13" ry="20" fill="#ec4899" transform="rotate(315 130 62)"/>
+                </g>
+                <circle cx="130" cy="62" r="10" fill="#f59e0b"/>
+                <g id="simMold" opacity="0"><circle cx="118" cy="48" r="5" fill="#4d7c0f"/><circle cx="142" cy="72" r="4" fill="#65a30d"/><circle cx="126" cy="80" r="3.5" fill="#3f6212"/><circle cx="146" cy="50" r="3" fill="#4d7c0f"/></g>
+                <g id="simDrops" fill="#38bdf8"><path d="M104 96 q5 -8 10 0 q-1 6 -5 6 q-4 0 -5 -6z"/><path d="M148 100 q5 -8 10 0 q-1 6 -5 6 q-4 0 -5 -6z"/></g>
+              </g>
+              <text x="130" y="162" text-anchor="middle" font-size="11" fill="#475569" id="simCaption">Hoa đang khô trong điều kiện em chọn</text>
+            </svg>
+          </div>
+          <div class="sim-verdict good" id="simVerdict"><b id="simVerdictTitle"></b>
+          <div class="meter"><span class="lbl">Độ ẩm còn lại</span><span class="bar"><span class="fill" id="simBarMoist" style="width:20%;background:#38bdf8"></span></span><span id="simValMoist"></span></div>
+          <div class="meter"><span class="lbl">Giữ màu</span><span class="bar"><span class="fill g" id="simBarColor" style="width:90%"></span></span><span id="simValColor"></span></div>
+          <div class="meter"><span class="lbl">Giữ hình dáng</span><span class="bar"><span class="fill g" id="simBarShape" style="width:90%"></span></span><span id="simValShape"></span></div>
+          <div class="meter"><span class="lbl">Nguy cơ mốc/thối</span><span class="bar"><span class="fill" id="simBarMold" style="width:10%;background:#dc2626"></span></span><span id="simValMold"></span></div><ul class="tight" id="simFeedback"></ul></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Thử thách: Xác định tổ hợp điều kiện gây mốc và làm hoa phai màu</h2>
+      <h3>Tổ hợp 1 - Làm hoa bị MỐC</h3>
+      <div class="ch-grid" id="chMold"></div>
+      <div class="btnrow">
+        <button class="btn sec sm" id="chMoldBtn" type="button">Kiểm tra tổ hợp mốc</button>
+        <span id="chMoldMsg" style="align-self:center;font-weight:600"></span>
+      </div>
+      <h3>Tổ hợp 2 - Làm hoa PHAI MÀU dù đã khô</h3>
+      <div class="ch-grid" id="chFade"></div>
+      <div class="btnrow">
+        <button class="btn sec sm" id="chFadeBtn" type="button">Kiểm tra tổ hợp phai màu</button>
+        <span id="chFadeMsg" style="align-self:center;font-weight:600"></span>
+      </div>
+      <label class="fl">Hai thất bại này khác nhau ở điều kiện nào? Giải thích bằng lời của nhóm em.</label>
+      <textarea id="chDiff" placeholder="Ví dụ: Hoa mốc là vì hoa còn nhiều nước - ... Còn hoa phai màu là vì ..., dù hoa đã khô hẳn..."></textarea>
+      <div class="btnrow">
+        <button class="btn ghost sm" id="chHintBtn" type="button" disabled>Xem gợi ý trả lời (chỉ xem sau khi đã tự làm)</button>
+        <span id="chHintLock" class="small" style="align-self:center"> Hãy trả lời câu hỏi phía trên trước, rồi nút gợi ý sẽ mở.</span>
+        <button class="btn" data-goto="t2">Tiếp tục: xem 5 phương pháp →</button>
+      </div>
+      <div class="dual ok" id="chHint" style="display:none;margin-top:12px"><b>Gợi ý trả lời:</b> hai thất bại khác nhau ở nguyên nhân chính. <b>Hoa mốc là thất bại vì NƯỚC</b> - hoa còn ẩm (không khí ẩm, bí gió, lấy ra quá sớm, hoặc trời lạnh nên khô quá chậm) nên nấm mốc có điều kiện phát triển. <b>Hoa phai màu là thất bại vì ÁNH SÁNG và NHIỆT</b> - hoa đã khô hẳn rồi, nhưng nắng gắt hoặc nhiệt quá cao phá mất màu của cánh. Nói ngắn gọn: mốc = thừa nước; phai màu = thừa sáng/nóng dù đã khô.</div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2 ============ -->
+  <section class="tab-panel" id="t2">
+    <div class="card">
+      <h2>Các phương pháp làm hoa khô</h2>
+      <p><b>Hướng dẫn:</b> HS lần lượt chọn từng phương pháp để xem loại hoa phù hợp, vật liệu cần thiết và quy trình cụ thể cho từng phương pháp.</p>
+      <div class="mfilter no-print" id="mfilter">
+        <button class="active" data-f="all">Tất cả 5 phương pháp</button>
+        <button data-f="fast">⚡ Nhanh nhất</button>
+        <button data-f="color">Giữ màu &amp; hình tốt</button>
+        <button data-f="notech">Không cần thiết bị</button>
+        <button data-f="flat">Làm sản phẩm phẳng</button>
+      </div>
+      
+    </div>
+
+    <!-- Method 1 -->
+    <article class="method" data-tags="notech" id="m1">
+      <div class="method-head">
+        <div class="method-num">1</div>
+        <div><h3>Treo ngược phơi khô trong không khí</h3><span class="tag">2–4 tuần</span><span class="tag grape">Độ khó: Dễ</span><span class="tag sky">Chi phí: Rất thấp</span>
+        <span class="tag teal">Không cần thiết bị</span><span class="tag green">Giữ dáng bó hoa</span></div>
+                <span class="chev">⌄</span>
+      </div>
+      <div class="method-body">
+                        <div class="grid2">
+          <div>
+            <div class="diagram">
+          <svg width="300" height="136" viewBox="0 0 300 136" aria-label="Minh họa treo ngược bó hoa">
+            <line x1="20" y1="14" x2="280" y2="14" stroke="#4f46e5" stroke-width="4" stroke-linecap="round"/>
+            <g><line x1="90" y1="14" x2="90" y2="48" stroke="#94a3b8" stroke-width="2"/><path d="M78 48 q12 -8 24 0 l-4 16 q-8 6 -16 0 z" fill="#f59e0b"/><line x1="84" y1="64" x2="80" y2="98" stroke="#059669" stroke-width="3"/><line x1="96" y1="64" x2="100" y2="98" stroke="#059669" stroke-width="3"/><rect x="76" y="96" width="28" height="7" rx="3" fill="#e11d48"/></g>
+            <g><line x1="155" y1="14" x2="155" y2="48" stroke="#94a3b8" stroke-width="2"/><circle cx="155" cy="58" r="13" fill="#db2777"/><circle cx="155" cy="58" r="5" fill="#fde68a"/><line x1="155" y1="71" x2="155" y2="98" stroke="#059669" stroke-width="3"/><rect x="141" y="96" width="28" height="7" rx="3" fill="#e11d48"/></g>
+            <g><line x1="220" y1="14" x2="220" y2="48" stroke="#94a3b8" stroke-width="2"/><path d="M208 48 q12 -8 24 0 l-4 16 q-8 6 -16 0 z" fill="#7c3aed"/><line x1="214" y1="64" x2="210" y2="98" stroke="#059669" stroke-width="3"/><line x1="226" y1="64" x2="230" y2="98" stroke="#059669" stroke-width="3"/><rect x="206" y="96" width="28" height="7" rx="3" fill="#e11d48"/></g>
+            <text x="150" y="118" text-anchor="middle" font-size="11" fill="#475569">Hoa úp ngược, thân buộc bằng dây chun</text><text x="150" y="132" text-anchor="middle" font-size="11" fill="#475569">Các bó cách nhau, nơi thoáng gió</text>
+          </svg>
+        </div>
+            <h3>Hoa phù hợp</h3>
+            <p>Hoa nhỏ, cứng cáp như oải hương, phi yến. Hoa lớn như cẩm tú cầu, hoa hồng, mẫu đơn thì treo <b>riêng từng bông</b>.</p>
+            <h3>Vật liệu</h3>
+            <ul class="tight"><li>Dây chun (hoặc dây thừng), móc/đinh/móc áo</li><li>Kẹp giấy uốn hình chữ S để làm móc treo</li><li>Dây kẽm hoa cho loài thân yếu, dễ gãy khi khô</li><li>Keo xịt tóc hoặc chất phủ hoa (tùy chọn, dùng sau khi khô)</li></ul>
+          </div>
+          <div>
+            <h3>Các bước tóm tắt</h3>
+            <ol class="steps">
+              <li>Hái hoa khi mới bắt đầu nở; tước hết lá; bó tối đa khoảng 10 bông cùng loài (hoa lớn bó riêng).</li>
+              <li>Buộc bó bằng dây chun - thân sẽ co lại khi khô nhưng dây chun vẫn ôm chặt.</li>
+              <li>Treo <b>ngược</b> ở nơi ấm, tối, khô, thoáng gió; các bó cách nhau, cách trần ít nhất ~15 cm.</li>
+              <li>Chờ 2–4 tuần; kiểm tra đến khi cánh giòn. Hoa cánh dày hoặc phòng chưa lý tưởng có thể lâu hơn.</li>
+              <li>(Tùy chọn) Xịt nhẹ keo xịt tóc/chất phủ hoa để hoa bền, ít rụng cánh.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="optbox"><b>Điều kiện tối ưu:</b> nơi <b>ấm · tối · khô · thoáng gió</b>. Tránh: buộc dây quá chặt (tạo túi ẩm gây thối), treo các bó sát nhau, nơi có ánh sáng (phai màu) hoặc ẩm (nấm mốc).</div>
+      </div>
+    </article>
+
+    <!-- Method 2 -->
+    <article class="method" data-tags="fast color" id="m2">
+      <div class="method-head">
+        <div class="method-num">2</div>
+        <div><h3>Lò vi sóng + chất hút ẩm</h3><span class="tag">Vài phút quay + 10–36 giờ để nguội</span><span class="tag grape">Độ khó: Trung bình–Khó</span><span class="tag sky">Chi phí: Trung bình</span>
+        <span class="tag rose">Nhanh nhất</span><span class="tag green">Giữ màu tốt</span><span class="tag amber">Cần người lớn giám sát</span></div>
+                <span class="chev">⌄</span>
+      </div>
+      <div class="method-body">
+                        <div class="grid2">
+          <div>
+            <div class="diagram">
+          <svg width="300" height="136" viewBox="0 0 300 136" aria-label="Minh họa hộp chất hút ẩm trong lò vi sóng">
+            <rect x="55" y="18" width="190" height="86" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="3"/>
+            <rect x="70" y="30" width="120" height="62" rx="6" fill="#eef2ff"/>
+            <rect x="82" y="58" width="96" height="26" rx="4" fill="#fde68a"/>
+            <circle cx="112" cy="50" r="10" fill="#db2777"/><circle cx="148" cy="46" r="10" fill="#f59e0b"/>
+            <rect x="200" y="34" width="32" height="24" rx="4" fill="#e0e7ff"/><circle cx="216" cy="72" r="9" fill="#4f46e5"/><circle cx="216" cy="90" r="5" fill="#94a3b8"/>
+            <rect x="258" y="58" width="26" height="34" rx="4" fill="#bae6fd"/><path d="M258 66 h26" stroke="#0284c7" stroke-width="2"/>
+            <text x="150" y="118" text-anchor="middle" font-size="11" fill="#475569">Hoa vùi trong hạt hút ẩm</text><text x="150" y="132" text-anchor="middle" font-size="11" fill="#475569">Đặt kèm một cốc nước nông trong lò</text>
+          </svg>
+        </div>
+            <h3>Hoa phù hợp</h3>
+            <p>Hoa nhiều cánh, bề mặt không lông/không dính: hoa hồng, cúc lá nhám, vạn thọ. Hái khi nở khoảng một nửa và còn chắc. Loài cánh rất dày có thể cho kết quả kém.</p>
+            <h3>Vật liệu</h3>
+            <ul class="tight"><li>Hộp dùng được trong lò vi sóng</li><li>Hạt hút ẩm (tốt nhất) - hoặc hỗn hợp hàn the + bột ngô tỉ lệ bằng nhau</li><li>Một cốc nước nông đặt kèm trong lò, tăm, bàn chải mịn</li></ul>
+          </div>
+          <div>
+            <h3>Các bước tóm tắt</h3>
+            <ol class="steps">
+              <li>Cắt thân còn ~2,5–5 cm. Rải chất hút ẩm dày ~2,5–5 cm dưới đáy hộp.</li>
+              <li>Đặt hoa đứng thẳng, cách nhau ít nhất ~2 cm; rắc thêm chất hút ẩm từ từ đến khi vùi kín hoa; dùng tăm chỉnh cánh cong.</li>
+              <li>Đặt một cốc nước nông riêng trong lò để giảm nguy cơ cháy/khô quá mức.</li>
+              <li>Quay khoảng 2 phút rồi kiểm tra bằng tăm; chưa khô thì quay thêm từng đợt 1 phút. Hoa mỏng dùng mức thấp; hoa dày có thể cần tới ~8 phút. <b>Luôn thử trước 1–2 bông.</b></li>
+              <li>Lấy hộp ra, hé nắp và để nguội yên 10–36 giờ tùy loài (hạt hút ẩm nguội rất chậm). Sau đó lấy hoa ra nhẹ nhàng, phủi sạch hạt bằng bàn chải mịn.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="optbox"><b>Điều kiện tối ưu:</b> quay <b>từng đợt ngắn và kiểm tra liên tục</b>, có cốc nước đi kèm, để nguội đủ lâu trước khi chạm vào. Tránh: cho vật kim loại vào lò vi sóng, quay một mạch quá lâu (cháy hoa), làm một mình không có người lớn.</div>
+      </div>
+    </article>
+
+    <!-- Method 3 -->
+    <article class="method" data-tags="notech flat" id="m3">
+      <div class="method-head">
+        <div class="method-num">3</div>
+        <div><h3>Ép hoa</h3><span class="tag">1–3 tuần</span><span class="tag grape">Độ khó: Dễ</span><span class="tag sky">Chi phí: Rất thấp</span>
+        <span class="tag teal">Không cần thiết bị</span><span class="tag teal">Sản phẩm phẳng: tranh, thẻ, thẻ đánh dấu trang</span></div>
+                <span class="chev">⌄</span>
+      </div>
+      <div class="method-body">
+                        <div class="grid2">
+          <div>
+            <div class="diagram">
+          <svg width="300" height="136" viewBox="0 0 300 136" aria-label="Minh họa ép hoa giữa giấy dưới vật nặng">
+            <rect x="70" y="86" width="160" height="10" rx="3" fill="#94a3b8"/>
+            <rect x="78" y="74" width="144" height="12" rx="2" fill="#fef3c7"/>
+            <circle cx="122" cy="80" r="6" fill="#db2777"/><circle cx="152" cy="80" r="6" fill="#7c3aed"/><circle cx="182" cy="80" r="6" fill="#f59e0b"/>
+            <rect x="78" y="64" width="144" height="10" rx="2" fill="#fef3c7"/>
+            <rect x="92" y="26" width="116" height="38" rx="4" fill="#4f46e5"/><text x="150" y="50" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">SÁCH NẶNG</text>
+            <text x="150" y="118" text-anchor="middle" font-size="11" fill="#475569">Hoa xếp một lớp giữa giấy khô</text><text x="150" y="132" text-anchor="middle" font-size="11" fill="#475569">Ép đều dưới vật nặng</text>
+          </svg>
+        </div>
+            <h3>Hoa phù hợp</h3>
+            <p>Hoa nhỏ và vốn đã khá phẳng như hoa bướm, tử đinh hương. Tránh hoa thân mọng nước hoặc cánh quá mỏng vì dễ hư khi ép.</p>
+            <h3>Vật liệu</h3>
+            <ul class="tight"><li>Giấy khô, không bóng: giấy báo, giấy thấm, bìa cứng/bìa sóng</li><li>Vật nặng đè đều: từ điển, bách khoa toàn thư, hộp nặng hoặc tấm gỗ</li></ul>
+          </div>
+          <div>
+            <h3>Các bước tóm tắt</h3>
+            <ol class="steps">
+              <li>Xếp hoa thành <b>một lớp duy nhất</b> trên giấy khô, phủ thêm một tờ giấy khô lên trên.</li>
+              <li>Đặt vật nặng đè đều lên chồng giấy; để ở nơi ấm, khô.</li>
+              <li>Sau khoảng 1 tuần, mở ra và <b>thay giấy mới khô</b> rồi ép tiếp.</li>
+              <li>Sau tổng cộng 1–3 tuần, gỡ ra: hoa đạt khi giòn, mỏng như giấy.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="optbox"><b>Điều kiện tối ưu:</b> nơi <b>ấm, khô</b>; giấy luôn khô và thấm hút tốt; <b>thay giấy sau tuần đầu</b> để hơi ẩm đã hút ra không làm mốc hoa. Tránh: xếp hoa chồng lớp, dùng giấy bóng không thấm.</div>
+      </div>
+    </article>
+
+    <!-- Method 4 -->
+    <article class="method" data-tags="fast" id="m4">
+      <div class="method-head">
+        <div class="method-num">4</div>
+        <div><h3>Sấy trong lò đối lưu ở nhiệt thấp</h3><span class="tag">Vài giờ ở ~38°C</span><span class="tag grape">Độ khó: Trung bình</span><span class="tag sky">Chi phí: Thấp</span>
+        <span class="tag rose">Nhanh (vài giờ)</span><span class="tag amber">Chỉ dùng lò đối lưu - cần người lớn giám sát</span></div>
+                <span class="chev">⌄</span>
+      </div>
+      <div class="method-body">
+                        <div class="grid2">
+          <div>
+            <div class="diagram">
+          <svg width="300" height="136" viewBox="0 0 300 136" aria-label="Minh họa hoa xỏ qua lưới trong lò đối lưu">
+            <rect x="60" y="16" width="180" height="82" rx="10" fill="#fff" stroke="#d97706" stroke-width="3"/>
+            <line x1="78" y1="48" x2="222" y2="48" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 4"/>
+            <circle cx="105" cy="42" r="9" fill="#0284c7"/><circle cx="150" cy="42" r="9" fill="#db2777"/><circle cx="195" cy="42" r="9" fill="#f59e0b"/>
+            <line x1="105" y1="51" x2="105" y2="76" stroke="#059669" stroke-width="3"/><line x1="150" y1="51" x2="150" y2="76" stroke="#059669" stroke-width="3"/><line x1="195" y1="51" x2="195" y2="76" stroke="#059669" stroke-width="3"/>
+            <text x="150" y="118" text-anchor="middle" font-size="11" fill="#475569">Thân xỏ qua mắt lưới, bông được đỡ ở trên</text><text x="150" y="132" text-anchor="middle" font-size="11" fill="#475569">Lò đối lưu thông gió ở 38°C</text>
+          </svg>
+        </div>
+            <h3>Hoa phù hợp</h3>
+            <p>Hoa nhỏ gọn, nhiều cánh như hoa thanh cúc và hoa cúc.</p>
+            <h3>Vật liệu</h3>
+            <ul class="tight"><li>Lưới kim loại mắt nhỏ (lưới gà) cắt vừa khay lò</li><li>Giá phơi để làm nguội sau khi sấy</li><li>Keo xịt tóc/chất phủ hoa (tùy chọn)</li></ul>
+          </div>
+          <div>
+            <h3>Các bước tóm tắt</h3>
+            <ol class="steps">
+              <li>Xỏ thân hoa qua lỗ lưới sao cho bông được lưới đỡ ở phía trên, thân thõng xuống dưới.</li>
+              <li>Làm nóng lò đối lưu ở khoảng <b>38°C (100°F)</b>; đặt lưới hoa vào lò và sấy chậm trong vài giờ (thời gian tùy loài và số lượng).</li>
+              <li>Khi hoa khô hẳn, lấy ra để trên giá cho nguội về nhiệt độ phòng rồi mới cầm.</li>
+              <li>(Tùy chọn) Xịt chất phủ để hoa bền hơn.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="optbox"><b>Điều kiện tối ưu:</b> lò <b>đối lưu, thông gió tốt</b>, nhiệt <b>thấp ~38°C</b>, sấy vài giờ. Cảnh báo quan trọng: <b>không thay bằng lò nướng thường</b> - lò thường giữ nhiều hơi ẩm và nhiệt độ tối thiểu thường cao hơn nhiều, dễ làm hỏng hoa.</div>
+      </div>
+    </article>
+
+    <!-- Method 5 -->
+    <article class="method" data-tags="color" id="m5">
+      <div class="method-head">
+        <div class="method-num">5</div>
+        <div><h3>Vùi hoa trong chất hút ẩm (không dùng lò)</h3><span class="tag">2–4 ngày (hạt hút ẩm) đến 14–21 ngày (cát)</span><span class="tag grape">Độ khó: Trung bình</span><span class="tag sky">Chi phí: Trung bình–Cao</span>
+        <span class="tag green">Giữ hình &amp; màu tốt nhất cho hoa lớn, mỏng manh</span></div>
+                <span class="chev">⌄</span>
+      </div>
+      <div class="method-body">
+                        <div class="grid2">
+          <div>
+            <div class="diagram">
+          <svg width="300" height="136" viewBox="0 0 300 136" aria-label="Minh họa hoa vùi trong hộp hạt hút ẩm">
+            <path d="M85 34 h130 l-8 62 a8 8 0 0 1 -8 7 h-98 a8 8 0 0 1 -8 -7 z" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+            <circle cx="118" cy="52" r="4" fill="#f59e0b"/><circle cx="140" cy="66" r="4" fill="#f59e0b"/><circle cx="168" cy="54" r="4" fill="#f59e0b"/><circle cx="188" cy="70" r="4" fill="#f59e0b"/><circle cx="150" cy="84" r="4" fill="#f59e0b"/>
+            <path d="M150 34 c-10 -12 -26 -8 -24 2 c1 7 10 9 16 5 c-4 6 0 12 8 12 s12 -6 8 -12 c6 4 15 2 16 -5 c2 -10 -14 -14 -24 -2z" fill="#db2777" opacity=".9"/>
+            <text x="150" y="118" text-anchor="middle" font-size="11" fill="#475569">Hoa đứng thẳng, được vùi kín</text><text x="150" y="132" text-anchor="middle" font-size="11" fill="#475569">Hạt hút ẩm nâng đỡ cánh hoa</text>
+          </svg>
+        </div>
+            <h3>Hoa phù hợp</h3>
+            <p>Lựa chọn tốt nhất cho <b>hoa lớn, mỏng manh</b> như hoa loa kèn - với điều kiện hoa không dễ rụng cánh. Hái khi nở khoảng một nửa và sấy ngay.</p>
+            <h3>Vật liệu - chọn 1 loại chất hút ẩm</h3>
+            <ul class="tight">
+              <li><b>Hạt hút ẩm:</b> nhanh nhất, tái sử dụng được nhiều lần, giá cao hơn; cần hộp kín khí. Hạt chuyển sang màu hồng khi đã hút no ẩm.</li>
+              <li><b>Hàn the + bột ngô:</b> trộn tỉ lệ bằng nhau (hoặc ít nhất 1 phần hàn the : 6 phần bột ngô); dùng hộp mở.</li>
+              <li><b>Cát mịn:</b> rẻ, chủ yếu nâng đỡ hình dáng để không khí làm khô - chậm nhất.</li>
+              <li>Hộp đựng chắc chắn, bàn chải nhỏ, tăm để kiểm tra.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Các bước tóm tắt</h3>
+            <ol class="steps">
+              <li>Rải chất hút ẩm dày ~2,5–5 cm; đặt hoa đứng vững; rắc/đổ thêm từ từ đến khi vùi kín hoa (riêng cát không nhất thiết vùi kín).</li>
+              <li>Để hộp ở nơi ấm, khô (hộp mở cần phòng thoáng gió). Kiểm tra sau vài ngày bằng cách dùng tăm thăm nhẹ cánh hoa.</li>
+              <li>Chờ theo vật liệu: <b>hạt hút ẩm 2–4 ngày</b> (hoa dày tới 1 tuần) · <b>hàn the 5–14 ngày</b> · <b>cát 14–21 ngày</b>.</li>
+              <li>Nghiêng hộp, gõ nhẹ cho hoa lộ ra; đỡ hoa <b>từ phía dưới</b> khi nhấc lên; phủi sạch hạt bằng bàn chải nhỏ. Chỉ lấy ra khi mép cánh đã giòn như giấy.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="optbox"><b>Điều kiện tối ưu:</b> chất hút ẩm phải <b>hoàn toàn khô</b> trước khi dùng; nơi để hộp <b>ấm, khô, thoáng</b>. Mẹo tái sử dụng hạt hút ẩm đã ngả hồng: trải hạt lên khay và sấy ở ~121°C trong 2–3 giờ cho khô lại (việc này cần người lớn làm). Tránh: lấy hoa ra quá sớm - hoa sẽ rũ xuống.</div>
+      </div>
+    </article>
+
+        <div class="card">
+      <h2>So sánh các phương pháp làm hoa khô</h2>
+      <div class="tbl-wrap">
+        <table id="cmpTable">
+          <thead><tr><th>Phương pháp</th><th>Thời gian</th><th>Hoa hợp nhất</th><th>Điều kiện tối ưu cốt lõi</th><th>Điểm mạnh</th><th>Điểm yếu / rủi ro</th></tr></thead>
+          <tbody>
+            <tr data-m="1"><td><b>1. Treo phơi khô</b></td><td><select class="cmp-sel" id="cmp-1-time"><option value="">- Chọn đáp án -</option><option>2–4 tuần</option><option>Vài phút + 10–36 giờ nguội</option><option>1–3 tuần</option><option>Vài giờ</option></select></td><td><select class="cmp-sel" id="cmp-1-flower"><option value="">- Chọn đáp án -</option><option>Hồng, cúc lá nhám, vạn thọ nhiều cánh</option><option>Hoa bướm, tử đinh hương nhỏ, phẳng</option><option>Thanh cúc, hoa cúc nhỏ gọn nhiều cánh</option><option>Oải hương, phi yến; hồng/cẩm tú cầu treo riêng</option></select></td><td><select class="cmp-sel" id="cmp-1-cond"><option value="">- Chọn đáp án -</option><option>Ấm, khô; thay giấy sau tuần đầu</option><option>Lò đối lưu ~38°C, thông gió tốt</option><option>Ấm · tối · khô · thoáng gió, bó cách nhau</option><option>Đợt quay ngắn, có cốc nước kèm, thử trước 1–2 bông</option></select></td><td><select class="cmp-sel" id="cmp-1-strong"><option value="">- Chọn đáp án -</option><option>Nhanh, khô đều</option><option>Đơn giản nhất, gần như không tốn kém</option><option>Nhanh nhất; giữ màu/hình tốt</option><option>Làm tranh/thẻ phẳng rất đẹp; rẻ</option></select></td><td><select class="cmp-sel" id="cmp-1-weak"><option value="">- Chọn đáp án -</option><option>Chậm nhất; dễ mốc nếu ẩm, phai màu nếu sáng</option><option>Dễ cháy nếu quay quá lâu; cần giám sát</option><option>Mất hình 3D; không hợp hoa mọng nước</option><option>Chỉ dùng lò đối lưu; cần giám sát</option></select></td></tr>
+            <tr data-m="2"><td><b>2. Vi sóng + hút ẩm</b></td><td><select class="cmp-sel" id="cmp-2-time"><option value="">- Chọn đáp án -</option><option>1–3 tuần</option><option>Vài giờ</option><option>2–4 ngày → 21 ngày tùy vật liệu</option><option>Vài phút + 10–36 giờ nguội</option></select></td><td><select class="cmp-sel" id="cmp-2-flower"><option value="">- Chọn đáp án -</option><option>Thanh cúc, hoa cúc nhỏ gọn nhiều cánh</option><option>Hoa lớn mỏng manh: loa kèn</option><option>Hồng, cúc lá nhám, vạn thọ nhiều cánh</option><option>Hoa bướm, tử đinh hương nhỏ, phẳng</option></select></td><td><select class="cmp-sel" id="cmp-2-cond"><option value="">- Chọn đáp án -</option><option>Chất hút ẩm khô hoàn toàn; nơi ấm, khô, thoáng</option><option>Đợt quay ngắn, có cốc nước kèm, thử trước 1–2 bông</option><option>Ấm, khô; thay giấy sau tuần đầu</option><option>Lò đối lưu ~38°C, thông gió tốt</option></select></td><td><select class="cmp-sel" id="cmp-2-strong"><option value="">- Chọn đáp án -</option><option>Nhanh nhất; giữ màu/hình tốt</option><option>Làm tranh/thẻ phẳng rất đẹp; rẻ</option><option>Nhanh, khô đều</option><option>Giữ hình &amp; màu tốt nhất</option></select></td><td><select class="cmp-sel" id="cmp-2-weak"><option value="">- Chọn đáp án -</option><option>Mất hình 3D; không hợp hoa mọng nước</option><option>Chỉ dùng lò đối lưu; cần giám sát</option><option>Tốn vật liệu; lấy hoa ra phải rất nhẹ tay</option><option>Dễ cháy nếu quay quá lâu; cần giám sát</option></select></td></tr>
+            <tr data-m="3"><td><b>3. Ép hoa</b></td><td><select class="cmp-sel" id="cmp-3-time"><option value="">- Chọn đáp án -</option><option>2–4 ngày → 21 ngày tùy vật liệu</option><option>2–4 tuần</option><option>1–3 tuần</option><option>Vài giờ</option></select></td><td><select class="cmp-sel" id="cmp-3-flower"><option value="">- Chọn đáp án -</option><option>Oải hương, phi yến; hồng/cẩm tú cầu treo riêng</option><option>Hoa bướm, tử đinh hương nhỏ, phẳng</option><option>Thanh cúc, hoa cúc nhỏ gọn nhiều cánh</option><option>Hoa lớn mỏng manh: loa kèn</option></select></td><td><select class="cmp-sel" id="cmp-3-cond"><option value="">- Chọn đáp án -</option><option>Ấm, khô; thay giấy sau tuần đầu</option><option>Lò đối lưu ~38°C, thông gió tốt</option><option>Chất hút ẩm khô hoàn toàn; nơi ấm, khô, thoáng</option><option>Ấm · tối · khô · thoáng gió, bó cách nhau</option></select></td><td><select class="cmp-sel" id="cmp-3-strong"><option value="">- Chọn đáp án -</option><option>Nhanh, khô đều</option><option>Giữ hình &amp; màu tốt nhất</option><option>Đơn giản nhất, gần như không tốn kém</option><option>Làm tranh/thẻ phẳng rất đẹp; rẻ</option></select></td><td><select class="cmp-sel" id="cmp-3-weak"><option value="">- Chọn đáp án -</option><option>Tốn vật liệu; lấy hoa ra phải rất nhẹ tay</option><option>Chậm nhất; dễ mốc nếu ẩm, phai màu nếu sáng</option><option>Mất hình 3D; không hợp hoa mọng nước</option><option>Chỉ dùng lò đối lưu; cần giám sát</option></select></td></tr>
+            <tr data-m="4"><td><b>4. Lò đối lưu</b></td><td><select class="cmp-sel" id="cmp-4-time"><option value="">- Chọn đáp án -</option><option>Vài phút + 10–36 giờ nguội</option><option>Vài giờ</option><option>2–4 ngày → 21 ngày tùy vật liệu</option><option>2–4 tuần</option></select></td><td><select class="cmp-sel" id="cmp-4-flower"><option value="">- Chọn đáp án -</option><option>Thanh cúc, hoa cúc nhỏ gọn nhiều cánh</option><option>Hoa lớn mỏng manh: loa kèn</option><option>Oải hương, phi yến; hồng/cẩm tú cầu treo riêng</option><option>Hồng, cúc lá nhám, vạn thọ nhiều cánh</option></select></td><td><select class="cmp-sel" id="cmp-4-cond"><option value="">- Chọn đáp án -</option><option>Chất hút ẩm khô hoàn toàn; nơi ấm, khô, thoáng</option><option>Ấm · tối · khô · thoáng gió, bó cách nhau</option><option>Đợt quay ngắn, có cốc nước kèm, thử trước 1–2 bông</option><option>Lò đối lưu ~38°C, thông gió tốt</option></select></td><td><select class="cmp-sel" id="cmp-4-strong"><option value="">- Chọn đáp án -</option><option>Đơn giản nhất, gần như không tốn kém</option><option>Nhanh nhất; giữ màu/hình tốt</option><option>Nhanh, khô đều</option><option>Giữ hình &amp; màu tốt nhất</option></select></td><td><select class="cmp-sel" id="cmp-4-weak"><option value="">- Chọn đáp án -</option><option>Dễ cháy nếu quay quá lâu; cần giám sát</option><option>Chỉ dùng lò đối lưu; cần giám sát</option><option>Tốn vật liệu; lấy hoa ra phải rất nhẹ tay</option><option>Chậm nhất; dễ mốc nếu ẩm, phai màu nếu sáng</option></select></td></tr>
+            <tr data-m="5"><td><b>5. Vùi chất hút ẩm</b></td><td><select class="cmp-sel" id="cmp-5-time"><option value="">- Chọn đáp án -</option><option>2–4 ngày → 21 ngày tùy vật liệu</option><option>2–4 tuần</option><option>Vài phút + 10–36 giờ nguội</option><option>1–3 tuần</option></select></td><td><select class="cmp-sel" id="cmp-5-flower"><option value="">- Chọn đáp án -</option><option>Oải hương, phi yến; hồng/cẩm tú cầu treo riêng</option><option>Hồng, cúc lá nhám, vạn thọ nhiều cánh</option><option>Hoa bướm, tử đinh hương nhỏ, phẳng</option><option>Hoa lớn mỏng manh: loa kèn</option></select></td><td><select class="cmp-sel" id="cmp-5-cond"><option value="">- Chọn đáp án -</option><option>Đợt quay ngắn, có cốc nước kèm, thử trước 1–2 bông</option><option>Ấm, khô; thay giấy sau tuần đầu</option><option>Chất hút ẩm khô hoàn toàn; nơi ấm, khô, thoáng</option><option>Ấm · tối · khô · thoáng gió, bó cách nhau</option></select></td><td><select class="cmp-sel" id="cmp-5-strong"><option value="">- Chọn đáp án -</option><option>Làm tranh/thẻ phẳng rất đẹp; rẻ</option><option>Giữ hình &amp; màu tốt nhất</option><option>Đơn giản nhất, gần như không tốn kém</option><option>Nhanh nhất; giữ màu/hình tốt</option></select></td><td><select class="cmp-sel" id="cmp-5-weak"><option value="">- Chọn đáp án -</option><option>Tốn vật liệu; lấy hoa ra phải rất nhẹ tay</option><option>Chậm nhất; dễ mốc nếu ẩm, phai màu nếu sáng</option><option>Dễ cháy nếu quay quá lâu; cần giám sát</option><option>Mất hình 3D; không hợp hoa mọng nước</option></select></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px">
+        <button class="btn" id="cmpCheckBtn" type="button">Kiểm tra đáp án</button>
+        <button class="btn ghost" id="cmpResetBtn" type="button">Chọn lại từ đầu</button>
+        <span id="cmpScore" style="font-weight:700"></span>
+      </div>
+    </div>
+
+<div class="card">
+      <h3>6 lỗi thường gặp - đọc trước khi chọn phương pháp</h3>
+      <div class="grid2">
+        <ul class="tight">
+          <li>Kỳ vọng hoa khô giữ nguyên kích thước và màu như hoa tươi.</li>
+          <li>Hái hoa đã nở hết, hoa héo hoặc có sâu bệnh.</li>
+          <li>Buộc bó quá chặt / treo quá sát nhau / nơi bí ẩm → thối, mốc.</li>
+        </ul>
+        <ul class="tight">
+          <li>Cho kim loại vào lò vi sóng; quay quá lâu không thử trước → cháy.</li>
+          <li>Dùng lò nướng thường thay cho lò đối lưu ở Phương pháp 4.</li>
+          <li>Lấy hoa khỏi chất hút ẩm quá sớm khi cánh chưa giòn.</li>
+        </ul>
+      </div>
+      <div class="btnrow no-print"><button class="btn" data-goto="t3">Đã rõ - sang bước chọn điều kiện tối ưu →</button></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3 ============ -->
+  <section class="tab-panel" id="t3">
+    <div class="card">
+      <h2>Quy tắc chọn hoa đầu vào</h2>
+      <ul class="tight">
+          <li>Chỉ chọn bông <b>không héo, không sâu bệnh, không dập nát</b> - khuyết điểm sẽ lộ rõ hơn sau khi khô.</li>
+          <li>Hái <b>dư số lượng</b> cần dùng để có bông dự phòng khi một vài bông hỏng.</li>
+          <li>Tước bỏ lá khỏi thân trước khi sấy (lá giữ ẩm và dễ mốc).</li>
+          <li>Ghi lại <b>màu và kích thước lúc tươi</b> để so sánh sau khi khô - đây là dữ liệu cho phần đánh giá ở Tab 5.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Chọn phương pháp &amp; điều kiện tối ưu</h2>
+      <p><b>Hướng dẫn:</b> HS thảo luận nhóm và lựa chọn theo mong muốn của nhóm để xác định phương pháp tối ưu.</p>
+
+      <label class="fl">Câu 1 · Nhóm em sẽ sấy loài hoa nào? (chọn mô tả gần nhất)</label>
+      <div class="radio-grid" data-q="flower">
+        <label class="radio-card"><input type="radio" name="flower" value="small-hardy"><span><b>Hoa nhỏ, cứng cáp</b><span>Oải hương, phi yến, sao tím… thân chắc, hoa nhỏ</span></span></label>
+        <label class="radio-card"><input type="radio" name="flower" value="large-delicate"><span><b>Hoa lớn, mỏng manh</b><span>Loa kèn, mẫu đơn, cẩm tú cầu… cánh to, dễ dập</span></span></label>
+        <label class="radio-card"><input type="radio" name="flower" value="multi-petal"><span><b>Hoa nhiều cánh, cánh vừa–dày</b><span>Hoa hồng, zinnia, vạn thọ, cẩm chướng…</span></span></label>
+        <label class="radio-card"><input type="radio" name="flower" value="small-compact"><span><b>Hoa nhỏ gọn, nhiều cánh</b><span>Hoa cúc, thanh cúc… bông nhỏ, chắc</span></span></label>
+        <label class="radio-card"><input type="radio" name="flower" value="small-flat"><span><b>Hoa nhỏ, phẳng</b><span>Pansy (hoa bướm), tử đinh hương, hoa dại nhỏ…</span></span></label>
+      </div>
+
+      <label class="fl">Câu 2 · Sản phẩm nhóm em muốn tạo ra là gì?</label>
+      <div class="radio-grid" data-q="goal">
+        <label class="radio-card"><input type="radio" name="goal" value="keep3d"><span><b>Giữ dáng 3D để cắm / trưng bày</b><span>Bó hoa khô, bình hoa khô</span></span></label>
+        <label class="radio-card"><input type="radio" name="goal" value="bestcolor"><span><b>Giữ màu và hình đẹp nhất có thể</b><span>Chấp nhận tốn công/vật liệu hơn</span></span></label>
+        <label class="radio-card"><input type="radio" name="goal" value="flat"><span><b>Sản phẩm phẳng</b><span>Tranh ép hoa, thẻ, bookmark, trang trí vở</span></span></label>
+        <label class="radio-card"><input type="radio" name="goal" value="any"><span><b>Chưa rõ - miễn thành công</b><span>Ưu tiên phương án dễ thành công nhất</span></span></label>
+      </div>
+
+      <label class="fl">Câu 3 · Nhóm em có bao nhiêu thời gian chờ?</label>
+      <div class="radio-grid" data-q="time">
+        <label class="radio-card"><input type="radio" name="time" value="1day"><span><b>Cần xong trong ~1 ngày</b><span>Sắp đến hạn nộp / trình bày</span></span></label>
+        <label class="radio-card"><input type="radio" name="time" value="1week"><span><b>Khoảng 2–7 ngày</b></span></label>
+        <label class="radio-card"><input type="radio" name="time" value="3weeks"><span><b>Khoảng 1–3 tuần</b></span></label>
+        <label class="radio-card"><input type="radio" name="time" value="4weeks"><span><b>2–4 tuần cũng được</b><span>Không gấp</span></span></label>
+      </div>
+
+      <label class="fl">Câu 4 · Ở nhà em có sẵn những gì? (chọn điều đúng nhất)</label>
+      <div class="radio-grid" data-q="equip">
+        <label class="radio-card"><input type="radio" name="equip" value="none"><span><b>Không có thiết bị đặc biệt</b><span>Chỉ có dây, giấy, sách nặng, móc treo…</span></span></label>
+        <label class="radio-card"><input type="radio" name="equip" value="micro"><span><b>Có lò vi sóng</b><span>Và có người lớn ở nhà khi dùng</span></span></label>
+        <label class="radio-card"><input type="radio" name="equip" value="oven"><span><b>Có lò nướng đối lưu / chế độ sấy nhiệt thấp</b><span>Chỉnh được xuống ~38–40°C</span></span></label>
+        <label class="radio-card"><input type="radio" name="equip" value="silica"><span><b>Có / mua được silica gel hoặc chất hút ẩm</b><span>Kèm hộp kín hoặc hộp bìa chắc</span></span></label>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn" id="recommendBtn">✨ Đề xuất phương pháp tối ưu cho nhóm em</button>
+      </div>
+      <p class="small" id="recWarn" style="color:var(--bad);font-weight:600"></p>
+
+      <div class="result-box" id="recResult">
+        <div class="dual ok">
+          <p class="verdict" id="recTitle"></p>
+          <p id="recReason" style="margin:0"></p>
+        </div>
+        <div class="grid2" style="margin-top:14px">
+          <div class="optbox" style="margin-top:0">
+            <b>Điều kiện tối ưu nhóm em cần tạo:</b>
+            <ul class="tight" id="recConditions"></ul>
+          </div>
+          <div class="dual warn">
+            <b> Rủi ro cần phòng &amp; phương án dự phòng</b>
+            <ul class="tight" id="recRisks"></ul>
+            <p style="margin:8px 0 0"><b>Phương án thay thế:</b> <span id="recAlt"></span></p>
+          </div>
+        </div>
+        <div class="btnrow no-print">
+          <button class="btn" id="toPlanBtn">Dùng phương pháp này để lập kế hoạch →</button>
+          <button class="btn sec" id="recAgainBtn">Trả lời lại</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Màu hoa sẽ thay đổi ra sao? Hãy dự đoán trước</h2>
+      <p>Dựa vào <b>loại hoa của nhóm em</b> và <b>phương pháp nhóm đã chọn</b> ở công cụ phía trên, hãy tự điền dự đoán của nhóm vào các ô dưới đây. Sau khi hoa khô xong, nhóm em sẽ đối chiếu dự đoán này với kết quả thật ở Tab 5.</p>
+      <div class="grid2">
+        <div>
+          <label class="fl">Loại hoa của nhóm em</label>
+          <input id="predFlower" type="text" placeholder="Ví dụ: hoa hồng">
+          <label class="fl">Màu hoa lúc tươi</label>
+          <input id="predColorNow" type="text" placeholder="Ví dụ: đỏ tươi">
+        </div>
+        <div>
+          <label class="fl">Dự đoán màu hoa sau khi khô</label>
+          <input id="predColorAfter" type="text" placeholder="Ví dụ: đỏ sẫm ngả nâu">
+          <label class="fl">Dự đoán hình dáng sau khi khô</label>
+          <input id="predShape" type="text" placeholder="Ví dụ: co lại một chút, cánh hơi cong vào">
+        </div>
+      </div>
+      <label class="fl">Vì sao nhóm em dự đoán như vậy?</label>
+      <textarea id="predWhy" placeholder="Dựa vào đặc điểm của hoa (màu gì, cánh dày hay mỏng, nhiều nước hay ít nước) và điều kiện của phương pháp nhóm đã chọn..."></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Kiểm tra điều kiện tại nhà của em</h2>
+      <p><b>Hướng dẫn:</b> HS thảo luận nhóm, lựa chọn vị trí thực hiện làm hoa khô trong nhà và lựa chọn các điều kiện tương ứng để đánh giá mức độ phù hợp của vị trí.</p>
+      <label class="fl">Nơi em định đặt / treo hoa</label>
+      <select id="homePlace">
+        <option value="">- Chọn nơi đặt -</option>
+        <option value="good">Phòng khô, râm/tối, thoáng gió (góc phòng khách, tủ, gác xép khô…)</option>
+        <option value="mid">Phòng bình thường, hơi sáng, thỉnh thoảng mở cửa sổ</option>
+        <option value="bad">Nơi ẩm hoặc bí: gần nhà tắm, bếp, ban công nắng gắt, phòng đóng kín ẩm</option>
+      </select>
+      <label class="fl">Độ ẩm cảm nhận trong phòng</label>
+      <select id="homeHum">
+        <option value="">- Chọn mức ẩm -</option>
+        <option value="good">Khô ráo - quần áo phơi trong phòng khô nhanh</option>
+        <option value="mid">Bình thường</option>
+        <option value="bad">Ẩm - tường/gương hay đọng hơi nước, đồ dễ mốc</option>
+      </select>
+      <label class="fl">Khả năng kiểm tra hoa trong quá trình sấy</label>
+      <select id="homeCheck">
+        <option value="">- Chọn tần suất -</option>
+        <option value="good">Kiểm tra được hằng ngày</option>
+        <option value="mid">Kiểm tra được vài ngày một lần</option>
+        <option value="bad">Đặt xong là để đó đến cuối, khó ghé xem</option>
+      </select>
+      <div class="btnrow"><button class="btn sec" id="homeCheckBtn">Đánh giá điều kiện nhà em</button></div>
+      <div class="result-box" id="homeResult"><div class="dual" id="homeBox"><b id="homeTitle"></b><ul class="tight" id="homeList"></ul></div></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 4 ============ -->
+  <section class="tab-panel" id="t4">
+    <div class="card">
+      <h2>Kế hoạch làm hoa khô tại nhà của nhóm</h2>
+      <p><b>Hướng dẫn:</b> HS thảo luận nhóm và điền đầy đủ các mục có dấu <span style="color:var(--bad);font-weight:700">*</span>. Sau khi hoàn thành, in kế hoạch và nộp lên canvas.</p>
+
+      <div class="grid2">
+        <div><label class="fl">Tên nhóm *</label><input type="text" id="pGroup" placeholder="Ví dụ: Nhóm Nụ Tầm Xuân"></div>
+        <div><label class="fl">Lớp</label><input type="text" id="pClass" placeholder="Ví dụ: 7A2"></div>
+      </div>
+      <label class="fl">Thành viên nhóm</label>
+      <input type="text" id="pMembers" placeholder="Ghi họ tên các thành viên, cách nhau bằng dấu phẩy">
+      <div class="grid2">
+        <div><label class="fl">Loài hoa sẽ sấy *</label><input type="text" id="pFlower" placeholder="Ví dụ: Hoa hồng đỏ, 12 bông (kèm 4 bông dự phòng)"></div>
+        <div><label class="fl">Ngày bắt đầu *</label><input type="date" id="pStart"></div>
+      </div>
+      <label class="fl">Phương pháp đã chọn *</label>
+      <select id="pMethod">
+        <option value="">- Chọn phương pháp (hoặc dùng nút đề xuất ở Tab 3) -</option>
+        <option value="1">1 · Treo ngược phơi khô trong không khí (2–4 tuần)</option>
+        <option value="2">2 · Lò vi sóng + chất hút ẩm (vài phút + 10–36 giờ nguội)</option>
+        <option value="3">3 · Ép hoa (1–3 tuần)</option>
+        <option value="4">4 · Lò đối lưu nhiệt thấp ~38°C (vài giờ)</option>
+        <option value="5">5 · Vùi trong chất hút ẩm (2–21 ngày tùy vật liệu)</option>
+      </select>
+      <label class="fl">Vì sao nhóm chọn phương pháp này? * <span class="small">(gắn với loài hoa, thời gian và điều kiện ở nhà)</span></label>
+      <textarea id="pReason" placeholder="Ví dụ: Hoa của nhóm là hoa hồng nhiều cánh, cần giữ dáng 3D; nhà em có silica gel và hộp kín nên vùi hút ẩm 2–4 ngày là kịp hạn nộp, lại giữ màu tốt hơn treo phơi…"></textarea>
+
+      <h3>Điều kiện tối ưu nhóm cam kết tạo ở nhà</h3>
+      <p class="small">Chọn phương pháp ở trên, danh sách điều kiện tương ứng sẽ hiện ở đây. Tích vào từng điều kiện nhóm sẽ thực hiện, và ghi rõ nơi đặt cụ thể.</p>
+      <div id="pCondList"></div>
+      <label class="fl">Nơi đặt cụ thể ở nhà *</label>
+      <input type="text" id="pPlace" placeholder="Ví dụ: Treo trong tủ quần áo phòng ngủ, cửa tủ hé mở, tránh nắng chiều…">
+    </div>
+
+    <div class="card">
+      <h3>Vật liệu cần chuẩn bị</h3>
+      <div id="pMatList"></div>
+      <label class="fl">Vật liệu khác (nếu có)</label>
+      <input type="text" id="pMatExtra" placeholder="Ghi thêm vật liệu ngoài danh sách gợi ý">
+      <h3>Các bước theo thời gian &amp; Phân công</h3>
+      <p class="small">Bảng tự dựng theo phương pháp và ngày bắt đầu em chọn - em có thể sửa trực tiếp từng ô cho khớp lịch của nhóm và điền tên người phụ trách cho từng bước.</p>
+      <div class="tbl-wrap"><table id="pTimeline"><thead><tr><th style="width:150px">Thời điểm</th><th>Việc cần làm</th><th style="width:190px">Người phụ trách</th></tr></thead>
+      <tbody id="tlBody"></tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <h3>Dự đoán kết quả &amp; tiêu chí thành công</h3>
+      <label class="fl">Dự đoán: hoa sau khi khô sẽ thay đổi thế nào về màu và kích thước?</label>
+      <textarea id="pPredict" placeholder="Ví dụ: Cánh co lại khoảng một ít, màu đỏ sẫm hơn và ngả nâu nhẹ; thân thẳng vì treo ngược…"></textarea>
+      <label class="fl">Nhóm sẽ coi là “thành công” khi nào?</label>
+      <textarea id="pSuccess" placeholder="Ví dụ: Ít nhất 8/12 bông khô giòn, không mốc, giữ được dáng 3D và màu nhận ra được là hoa hồng…"></textarea>
+      <label class="fl">Rủi ro lớn nhất &amp; phương án dự phòng</label>
+      <textarea id="pRisk" placeholder="Ví dụ: Trời mưa ẩm nhiều ngày → chuyển bó hoa sang phòng có điều hòa/máy hút ẩm; chuẩn bị sẵn 4 bông dự phòng…"></textarea>
+      <h3>Cam kết an toàn</h3>
+      <label class="check"><input type="checkbox" class="safe" id="s1"><span>Khi dùng lò vi sóng / lò nướng, nhóm có <b>người lớn ở nhà giám sát</b> và không cho vật kim loại vào lò vi sóng.</span></label>
+      <label class="check"><input type="checkbox" class="safe" id="s2"><span>Chất hút ẩm và hoa đang sấy được để <b>xa tầm tay trẻ nhỏ và vật nuôi</b>; không ăn/uống bất kỳ vật liệu nào trong thí nghiệm.</span></label>
+      <label class="check"><input type="checkbox" class="safe" id="s3"><span>Nhóm rửa tay sau khi thao tác với hoa và chất hút ẩm (nhất là borax), và thao tác nhẹ tay khi lấy hoa khô ra.</span></label>
+      <div class="btnrow no-print">
+        <button class="btn" id="printBtn">In kế hoạch của nhóm</button>
+        <button class="btn ghost" id="clearBtn">Xóa toàn bộ và làm lại</button>
+      </div>
+      <p class="small" id="planStatus"></p>
+    </div>
+  </section>
+
+  <!-- ============ TAB 5 ============ -->
+  <section class="tab-panel" id="t5">
+    <div class="card">
+      <h2>Nhật ký theo dõi trong lúc sấy</h2>
+      <p><b>Hướng dẫn:</b> HS ghi chú lại màu sắc/hình dáng thay đổi, độ giòn khi thử mép cánh, và dấu hiệu ẩm/mốc theo mốc thời gian.</p>
+      <div class="tbl-wrap"><table id="obsTable"><thead><tr><th style="width:150px">Mốc thời gian</th><th>Màu sắc / hình dáng thay đổi</th><th style="width:170px">Độ giòn khi thử mép cánh</th><th style="width:170px">Dấu hiệu ẩm / mốc?</th><th style="width:44px"></th></tr></thead><tbody></tbody></table></div>
+      <div class="btnrow no-print"><button class="btn sec sm" id="addObsBtn">+ Thêm lần kiểm tra</button></div>
+      <div class="dual" style="margin-top:14px"><b>Cách thử độ khô:</b> chạm nhẹ vào <b>mép cánh</b> - khô đạt khi giòn như giấy. Nếu cánh còn mềm/dẻo hoặc có mùi ẩm, hãy tiếp tục sấy và kiểm tra điều kiện nơi đặt (ẩm? bí? thiếu gió?) trước khi kết luận phương pháp sai.</div>
+    </div>
+
+    <div class="card">
+      <h2>Tự đánh giá sản phẩm hoa khô của nhóm</h2>
+      <p class="small">Chấm mỗi tiêu chí từ 1 (chưa đạt) đến 4 (rất tốt), dựa trên sản phẩm thật - không dựa trên cảm giác.</p>
+      <div id="rubric"></div>
+      <p style="margin-top:12px"><span class="score-badge" id="rubricTotal">Tổng: 0 / 20</span> <span class="small" id="rubricMsg"></span></p>
+      <h3>Phản tư cuối cùng của nhóm</h3>
+      <label class="fl">1 · Điều kiện nào ảnh hưởng mạnh nhất đến kết quả của nhóm? Bằng chứng là gì?</label>
+      <textarea id="r1" placeholder="Ví dụ: Thông gió - hai bó treo sát nhau bị mốc nhẹ ở giữa bó, bó treo riêng thì khô đẹp…"></textarea>
+      <label class="fl">2 · Nếu làm lại, nhóm sẽ thay đổi điều kiện gì? Vì sao?</label>
+      <textarea id="r2"></textarea>
+      <label class="fl">3 · Sản phẩm hoa khô của nhóm sẽ được dùng để làm gì?</label>
+      <textarea id="r3" placeholder="Cắm bình trưng bày, làm tranh/thẻ tặng, bookmark…"></textarea>
+      <div class="btnrow no-print">
+        <button class="btn" id="printBtn2">In kế hoạch kèm kết quả theo dõi</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Print area -->
+<div id="printArea"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var STORE='dryflowers_plan_v1';
+var state={recMethod:null,quizDone:false,planSaved:false};
+
+/* ---------- Tabs ---------- */
+var tabBtns=document.querySelectorAll('.tab-btn');
+function goTab(id){
+  if(id==='t4'){var pm=document.getElementById('pMethod').value; var has=document.querySelectorAll('#tlBody tr:not(.tl-empty)').length>0; if(pm&&!has) refreshMethodDeps();}
+  tabBtns.forEach(function(b){b.classList.toggle('active',b.dataset.tab===id);});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id===id);});
+  window.scrollTo({top:0,behavior:'smooth'});
+  markStep(id);
+}
+tabBtns.forEach(function(b){b.addEventListener('click',function(){goTab(b.dataset.tab);});});
+document.querySelectorAll('[data-goto]').forEach(function(b){b.addEventListener('click',function(){goTab(b.dataset.goto);});});
+
+function markStep(id){
+  var map={t1:1,t2:2,t3:3,t4:4,t5:5};
+  for(var i=1;i<=5;i++){
+    var el=document.getElementById('ps'+i); if(!el) continue;
+    el.classList.remove('now');
+  }
+  var cur=document.getElementById('ps'+map[id]); if(cur) cur.classList.add('now');
+}
+function doneStep(n){var el=document.getElementById('ps'+n); if(el){el.classList.add('done'); el.querySelector('.dot').textContent='✓';}}
+markStep('t1');
+
+/* ---------- Simulation: 6 điều kiện ---------- */
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function simCompute(temp,hum,light,wind,time,petal){
+  var power={cold:25,warm:55,hot:82}[temp]
+          + {dry:15,normal:0,humid:-20}[hum]
+          + {good:15,low:0,sealed:-15}[wind]
+          + {thin:10,medium:0,thick:-20}[petal];
+  var tMult={early:0.45,right:1,long:1.25}[time];
+  var moisture=clamp(Math.round(100-power*tMult),0,100);
+  var color=100 + {dark:0,light:-15,sun:-42}[light] + (temp==='hot'?-30:0) + (time==='long'?-15:0);
+  var mold=(moisture>=55?68:moisture>=32?40:10) + (hum==='humid'?18:hum==='dry'?-8:0) + (wind==='sealed'?14:wind==='good'?-8:0) + (temp==='cold'?8:0);
+  mold=clamp(Math.round(mold),2,98);
+  if(mold>=55) color-=10;
+  color=clamp(Math.round(color),5,100);
+  var shape=100 + (temp==='hot'?-25:0) + (moisture>=55?-32:moisture>=32?-14:0) + (petal==='thick'&&time==='early'?-10:0) + (petal==='thin'&&temp==='hot'?-10:0) + (time==='long'?-15:0) + (mold>=55?-15:0);
+  shape=clamp(Math.round(shape),5,100);
+  return {moisture:moisture,color:color,mold:mold,shape:shape};
+}
+function simUpdate(){
+  var temp=document.getElementById('simTemp').value,
+      hum=document.getElementById('simHum').value,
+      light=document.getElementById('simLight').value,
+      wind=document.getElementById('simWindSel').value,
+      time=document.getElementById('simTime').value,
+      petal=document.getElementById('simPetal').value;
+  var r=simCompute(temp,hum,light,wind,time,petal);
+  var moisture=r.moisture, color=r.color, mold=r.mold, shape=r.shape;
+  /* Thanh chỉ số */
+  document.getElementById('simBarMoist').style.width=moisture+'%';
+  document.getElementById('simValMoist').textContent=moisture+'%';
+  document.getElementById('simBarColor').style.width=color+'%';
+  document.getElementById('simValColor').textContent=color+'%';
+  document.getElementById('simBarShape').style.width=shape+'%';
+  document.getElementById('simValShape').textContent=shape+'%';
+  document.getElementById('simBarMold').style.width=mold+'%';
+  document.getElementById('simValMold').textContent=mold+'%';
+  /* Hình hoa */
+  var fill=temp==='hot'?'#b45309':(color>=80?'#ec4899':color>=55?'#f472b6':'#fbcfe8');
+  document.querySelectorAll('#simPetals .sp').forEach(function(p){p.setAttribute('fill',fill);});
+  document.getElementById('simStem').setAttribute('stroke',(temp==='hot'||time==='long')?'#a16207':'#059669');
+  document.getElementById('simMold').setAttribute('opacity',mold>=45?((mold-40)/60).toFixed(2):0);
+  document.getElementById('simDrops').setAttribute('opacity',moisture>=35?1:moisture>=18?0.45:0);
+  document.getElementById('simSun').setAttribute('opacity',light==='dark'?0.06:light==='light'?0.45:1);
+  document.getElementById('simWind').setAttribute('opacity',wind==='good'?0.95:wind==='low'?0.4:0.08);
+  var droop=moisture>=55?16:moisture>=35?7:0;
+  document.getElementById('simFlower').setAttribute('transform','rotate('+droop+' 130 140)');
+  /* Nhận xét theo từng điều kiện: mỗi điều kiện chỉ có 2 mức - tối ưu / chưa tối ưu */
+  var COND=[
+    ['simTemp','Nhiệt độ',temp==='warm','ấm vừa - nước bốc hơi đều, an toàn cho cánh hoa',temp==='cold'?'trời lạnh làm nước bốc hơi chậm, hoa lâu khô và dễ mốc':'nhiệt quá cao làm cánh cháy sẫm màu và giòn vụn'],
+    ['simHum','Độ ẩm không khí',hum==='dry','không khí khô ráo giúp hơi nước thoát khỏi hoa nhanh',hum==='humid'?'không khí ẩm làm hơi nước khó thoát khỏi hoa, nguy cơ mốc/thối tăng mạnh':'độ ẩm trung bình làm hoa khô chậm hơn mức tốt nhất'],
+    ['simLight','Ánh sáng',light==='dark','nơi tối hoặc râm mát giúp giữ màu cánh tốt nhất',light==='sun'?'nắng gắt làm màu cánh phai mạnh, dù hoa vẫn khô được':'ánh sáng vừa vẫn làm màu cánh phai nhẹ trong lúc sấy'],
+    ['simWindSel','Thông gió',wind==='good','gió nhẹ thổi qua mang hơi ẩm đi, hoa mau khô',wind==='sealed'?'nơi bí kín giữ hơi ẩm quanh hoa - điều kiện lý tưởng cho nấm mốc':'ít gió làm hơi ẩm thoát chậm, hoa lâu khô hơn'],
+    ['simTime','Thời gian',time==='right','đủ thời gian để mép cánh khô giòn như giấy',time==='early'?'lấy ra quá sớm - hoa còn ẩm bên trong, sẽ rũ và mốc sau đó':'để quá lâu làm màu phai thêm và cánh dễ vụn khi chạm vào'],
+    ['simPetal','Đặc điểm của hoa',petal==='thin','cánh mỏng, ít nước nên khô nhanh và đều',petal==='thick'?'cánh dày, nhiều nước nên khô chậm - cần nhiều thời gian và thông gió tốt hơn':'cánh vừa cần đủ thời gian mới khô tới lõi']
+  ];
+  var allOpt=COND.every(function(c){return c[2];});
+  var box=document.getElementById('simVerdict'), title=document.getElementById('simVerdictTitle'), cap=document.getElementById('simCaption');
+  var act=null; COND.forEach(function(c){if(c[0]===activeCond) act=c;});
+  title.textContent='Kết quả dự đoán';
+  if(mold>=60||moisture>=62){box.className='sim-verdict bad'; cap.textContent='Hoa còn ướt, rũ xuống và bắt đầu mốc';}
+  else if(act&&act[2]){box.className='sim-verdict good'; cap.textContent='Hoa khô giòn, giữ màu và dáng đẹp';}
+  else{box.className='sim-verdict mid'; cap.textContent=mold>=45?'Bắt đầu xuất hiện đốm mốc trên cánh':(color<70?'Hoa khô nhưng màu đã phai mạnh':'Hoa đang khô, cần điều chỉnh thêm');}
+  var ul=document.getElementById('simFeedback'); ul.innerHTML='';
+  COND.forEach(function(c){if(c[0]!==activeCond) return; var li=document.createElement('li'); li.innerHTML='<b>'+c[1]+(c[2]?' - tối ưu':' - chưa tối ưu')+'</b>: '+(c[2]?c[3]:c[4]); ul.appendChild(li);});
+}
+['simTemp','simHum','simLight','simWindSel','simTime','simPetal'].forEach(function(id){
+  document.getElementById(id).addEventListener('change',simUpdate);
+});
+var activeCond='simTemp';
+var SIM_IDS=['simTemp','simHum','simLight','simWindSel','simTime','simPetal'];
+function setActiveCond(id){
+  if(SIM_IDS.indexOf(id)<0) id='simTemp';
+  activeCond=id;
+  document.querySelectorAll('.factor2').forEach(function(c){c.classList.toggle('active',c.dataset.sim===id);});
+  document.querySelectorAll('.sim-ctl').forEach(function(c){c.classList.toggle('show',c.id==='ctl-'+id);});
+  simUpdate();
+}
+document.querySelectorAll('.factor2').forEach(function(card){
+  card.addEventListener('click',function(){
+    setActiveCond(card.dataset.sim);
+    document.getElementById('simPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    saveAll();
+  });
+});
+setActiveCond('simTemp');
+simUpdate();
+
+/* ---------- Thử thách: tìm tổ hợp mốc + tổ hợp phai màu ---------- */
+var CH_DEFS=[
+  ['temp',' Nhiệt độ',[['cold','Lạnh'],['warm','Ấm vừa'],['hot','Quá nóng']],'warm'],
+  ['hum',' Độ ẩm không khí',[['dry','Khô ráo'],['normal','Bình thường'],['humid','Ẩm cao']],'dry'],
+  ['light',' Ánh sáng',[['dark','Tối / râm'],['light','Sáng vừa'],['sun','Nắng gắt']],'dark'],
+  ['wind',' Thông gió',[['good','Thoáng gió tốt'],['low','Ít gió'],['sealed','Bí kín']],'good'],
+  ['time',' Thời gian',[['early','Lấy ra quá sớm'],['right','Vừa đủ'],['long','Để quá lâu']],'right'],
+  ['petal',' Loại cánh hoa',[['thin','Cánh mỏng'],['medium','Cánh vừa'],['thick','Cánh dày, mọng nước']],'medium']
+];
+function buildChGroup(containerId,prefix){
+  var box=document.getElementById(containerId); if(!box) return;
+  CH_DEFS.forEach(function(d){
+    var wrap=document.createElement('div');
+    var lab=document.createElement('label'); lab.textContent=d[1]; lab.setAttribute('style','font-weight:600;font-size:13.5px;display:block;margin-bottom:3px');
+    var sel=document.createElement('select'); sel.id=prefix+'-'+d[0]; sel.className='ch-sel';
+    d[2].forEach(function(o){var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; if(o[0]===d[3]) op.selected=true; sel.appendChild(op);});
+    wrap.appendChild(lab); wrap.appendChild(sel); box.appendChild(wrap);
+  });
+}
+buildChGroup('chMold','chM');
+buildChGroup('chFade','chF');
+function chVals(prefix){var v={}; CH_DEFS.forEach(function(d){var el=document.getElementById(prefix+'-'+d[0]); v[d[0]]=el?el.value:'';}); return v;}
+function chCompute(prefix){var v=chVals(prefix); return simCompute(v.temp,v.hum,v.light,v.wind,v.time,v.petal);}
+var chSolved={mold:false,fade:false};
+document.getElementById('chMoldBtn').addEventListener('click',function(){
+  var r=chCompute('chM'), msg=document.getElementById('chMoldMsg');
+  if(r.mold>=60){chSolved.mold=true; msg.textContent=' Đúng rồi! Tổ hợp này cho nguy cơ mốc '+r.mold+'% và độ ẩm còn lại '+r.moisture+'% - hoa chắc chắn bị mốc.'; msg.style.color='var(--ok)';}
+  else{msg.textContent='Chưa mốc: nguy cơ mốc mới '+r.mold+'%, độ ẩm còn lại '+r.moisture+'%. Gợi ý: thử tăng độ ẩm không khí, giảm thông gió hoặc lấy hoa ra sớm hơn.'; msg.style.color='var(--warn)';}
+  if(chSolved.mold&&chSolved.fade) doneStep(1);
+  saveAll();
+});
+document.getElementById('chFadeBtn').addEventListener('click',function(){
+  var r=chCompute('chF'), msg=document.getElementById('chFadeMsg');
+  if(r.moisture<=25&&r.color<=65){chSolved.fade=true; msg.textContent=' Đúng rồi! Hoa đã khô (độ ẩm còn '+r.moisture+'%) nhưng giữ màu chỉ còn '+r.color+'% - khô mà xấu.'; msg.style.color='var(--ok)';}
+  else if(r.moisture>25){msg.textContent='Hoa chưa khô hẳn (độ ẩm còn '+r.moisture+'%) nên chưa tính là phai màu dù đã khô. Hãy chọn điều kiện làm hoa khô trước, rồi mới làm mất màu.'; msg.style.color='var(--warn)';}
+  else{msg.textContent='Hoa đã khô nhưng màu còn giữ tới '+r.color+'% - chưa phai đủ. Gợi ý: thử nắng gắt hoặc nhiệt quá cao.'; msg.style.color='var(--warn)';}
+  if(chSolved.mold&&chSolved.fade) doneStep(1);
+  saveAll();
+});
+function chHintGate(){
+  var ok=document.getElementById('chDiff').value.trim().length>0;
+  document.getElementById('chHintBtn').disabled=!ok;
+  document.getElementById('chHintLock').style.display=ok?'none':'';
+}
+document.getElementById('chDiff').addEventListener('input',chHintGate);
+document.getElementById('chHintBtn').addEventListener('click',function(){
+  var h=document.getElementById('chHint');
+  h.style.display=(h.style.display==='none')?'block':'none';
+});
+
+/* ---------- Method filter & expand ---------- */
+document.querySelectorAll('.method-head').forEach(function(h){
+  h.addEventListener('click',function(){h.parentElement.classList.toggle('open'); doneStep(2);});
+});
+document.getElementById('m1').classList.add('open');
+document.querySelectorAll('#mfilter button').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('#mfilter button').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    var f=b.dataset.f;
+    document.querySelectorAll('.method').forEach(function(m){
+      m.style.display=(f==='all'||(' '+m.dataset.tags+' ').indexOf(' '+f+' ')>=0)?'':'none';
+    });
+  });
+});
+
+/* ---------- Recommender ---------- */
+var METHODS={
+  1:{name:'Phương pháp 1 · Treo ngược phơi khô trong không khí',
+     conditions:['Nơi treo: ấm, tối/râm, khô và thoáng gió; cách trần ít nhất ~15 cm','Các bó cách nhau, mỗi bó tối đa ~10 bông cùng loài; hoa lớn treo riêng từng bông','Buộc bằng dây chun, không buộc quá chặt để tránh túi ẩm gây thối','Thời gian dự kiến: 2–4 tuần; kiểm tra độ giòn ở mép cánh trước khi thu hoạch','Sau khi khô: có thể xịt nhẹ keo xịt tóc/chất phủ hoa để giảm rụng cánh'],
+     risks:['Phòng ẩm hoặc bí → mốc/thối: chuyển sang phòng khô thoáng nhất nhà, hoặc chuyển phương pháp','Treo nơi có sáng → phai màu: che tối nơi treo'],
+     days:'2–4 tuần'},
+  2:{name:'Phương pháp 2 · Lò vi sóng + chất hút ẩm',
+     conditions:['Hoa cắt thân còn ~2,5–5 cm, vùi kín trong silica gel (lớp dưới dày ~2,5–5 cm), các bông cách nhau ≥ ~2 cm','Đặt kèm một cốc nước nông trong lò để giảm nguy cơ cháy/khô quá mức','Quay ~2 phút rồi kiểm tra; thêm từng đợt 1 phút khi cần; hoa mỏng dùng mức thấp - luôn thử trước 1–2 bông','Để hộp nguội yên 10–36 giờ tùy loài trước khi lấy hoa ra; để xa trẻ em và vật nuôi','Tuyệt đối không cho vật kim loại vào lò vi sóng; có người lớn giám sát'],
+     risks:['Quay quá lâu → cháy hoa: rút ngắn đợt quay và kiểm tra thường xuyên hơn','Không có silica gel → dùng hỗn hợp borax + bột ngô tỉ lệ bằng nhau, nhưng thời gian sẽ khác - thử 1 bông trước'],
+     days:'xong trong ngày (kèm thời gian nguội)'},
+  3:{name:'Phương pháp 3 · Ép hoa',
+     conditions:['Hoa xếp một lớp duy nhất giữa giấy khô, không bóng, thấm hút tốt (báo/giấy thấm + bìa)','Vật nặng đè đều lên toàn bộ bề mặt; để chồng ép ở nơi ấm, khô','Sau ~1 tuần: mở ra thay toàn bộ giấy mới khô, ép tiếp','Tổng thời gian 1–3 tuần; hoa đạt khi giòn, mỏng như giấy'],
+     risks:['Giấy ẩm không thay → mốc: thay giấy đúng hẹn tuần đầu','Hoa mọng nước ép sẽ hư → nếu hoa của nhóm mọng nước, đổi sang Phương pháp 5'],
+     days:'1–3 tuần'},
+  4:{name:'Phương pháp 4 · Lò đối lưu nhiệt thấp',
+     conditions:['Chỉ dùng lò đối lưu (có quạt thông gió); nhiệt độ ~38°C (100°F) - không dùng lò nướng thường','Thân xỏ qua lưới kim loại, bông được đỡ phía trên, thân thõng xuống','Sấy vài giờ; theo dõi trong suốt quá trình, có người lớn giám sát','Lấy ra để nguội hẳn trên giá phơi rồi mới cầm'],
+     risks:['Lò không chỉnh xuống được ~38–40°C → nhiệt quá cao làm hỏng hoa: chuyển sang Phương pháp 1 hoặc 5','Không có lưới → dùng lưới kim loại mắt nhỏ sạch thay thế, không dùng nhựa trong lò'],
+     days:'vài giờ'},
+  5:{name:'Phương pháp 5 · Vùi hoa trong chất hút ẩm',
+     conditions:['Chất hút ẩm phải hoàn toàn khô trước khi dùng; lớp dưới dày ~2,5–5 cm, vùi kín hoa, hoa đặt đứng vững','Silica gel: hộp kín khí, 2–4 ngày (hoa dày tới 1 tuần); hạt ngả hồng = đã no ẩm','Borax + bột ngô: hộp mở, 5–14 ngày, nơi thoáng gió · Cát mịn: 14–21 ngày','Để hộp ở nơi ấm, khô; kiểm tra bằng tăm sau vài ngày, chỉ lấy hoa ra khi mép cánh giòn như giấy','Khi lấy ra: nghiêng hộp, gõ nhẹ, đỡ hoa từ phía dưới, phủi hạt bằng bàn chải mịn'],
+     risks:['Lấy ra quá sớm → hoa rũ: kiên nhẫn chờ và thử mép cánh trước','Silica gel đã ngả hồng từ trước → phải làm khô lại hạt (người lớn sấy ~121°C, 2–3 giờ) hoặc thay hạt mới'],
+     days:'2–21 ngày tùy vật liệu'}
+};
+function scoreMethods(a){
+  var s={1:0,2:0,3:0,4:0,5:0};
+  // flower fit
+  if(a.flower==='small-hardy'){s[1]+=5;s[3]+=1;s[5]+=2;}
+  if(a.flower==='large-delicate'){s[5]+=5;s[1]+=3;s[2]+=1;}
+  if(a.flower==='multi-petal'){s[2]+=5;s[5]+=4;s[1]+=3;s[4]+=2;}
+  if(a.flower==='small-compact'){s[4]+=5;s[1]+=3;s[5]+=3;s[2]+=2;}
+  if(a.flower==='small-flat'){s[3]+=6;s[5]+=2;s[2]+=2;}
+  // goal fit
+  if(a.goal==='keep3d'){s[1]+=3;s[5]+=3;s[2]+=2;s[4]+=2;s[3]-=6;}
+  if(a.goal==='bestcolor'){s[5]+=4;s[2]+=3;}
+  if(a.goal==='flat'){s[3]+=8;s[1]-=3;s[5]-=2;s[2]-=2;s[4]-=2;}
+  if(a.goal==='any'){s[1]+=3;s[3]+=2;s[5]+=1;}
+  // time fit
+  if(a.time==='1day'){s[2]+=6;s[4]+=5;s[1]-=6;s[3]-=6;s[5]+= (a.equip==='silica'?1:-3);}
+  if(a.time==='1week'){s[5]+=4;s[2]+=3;s[4]+=3;s[1]-=3;s[3]-=2;}
+  if(a.time==='3weeks'){s[3]+=4;s[5]+=3;s[1]+=2;}
+  if(a.time==='4weeks'){s[1]+=5;s[3]+=3;s[5]+=2;}
+  // equipment fit
+  if(a.equip==='none'){s[1]+=4;s[3]+=4;s[2]-=8;s[4]-=8; if(a.flower!=='small-flat'&&a.goal!=='flat') s[5]-=2;}
+  if(a.equip==='micro'){s[2]+=6;s[5]+=1;}
+  if(a.equip==='oven'){s[4]+=6;}
+  if(a.equip==='silica'){s[5]+=6;s[2]+=2;}
+  return s;
+}
+var lastRec=null;
+function radioVal(n){var el=document.querySelector('input[name="'+n+'"]:checked');return el?el.value:null;}
+function showRec(a,scroll){
+  var s=scoreMethods(a);
+  var order=Object.keys(s).sort(function(x,y){return s[y]-s[x];});
+  var best=+order[0], alt=+order[1];
+  lastRec=best;
+  document.getElementById('recTitle').textContent='Đề xuất tối ưu: '+METHODS[best].name;
+  document.getElementById('recReason').innerHTML='Dựa trên loài hoa, sản phẩm mong muốn, thời gian (<b>'+METHODS[best].days+'</b>) và thiết bị sẵn có của nhóm, đây là phương án có khả năng thành công và đạt mục tiêu cao nhất.';
+  var ul=document.getElementById('recConditions'); ul.innerHTML='';
+  METHODS[best].conditions.forEach(function(c){var li=document.createElement('li'); li.textContent=c; ul.appendChild(li);});
+  var rk=document.getElementById('recRisks'); rk.innerHTML='';
+  METHODS[best].risks.forEach(function(c){var li=document.createElement('li'); li.textContent=c; rk.appendChild(li);});
+  document.getElementById('recAlt').textContent=METHODS[alt].name+' - chọn phương án này nếu điều kiện ở nhà thay đổi (ví dụ không còn thiết bị, hoặc có thêm thời gian).';
+  document.getElementById('recResult').classList.add('show');
+  document.querySelectorAll('#cmpTable tbody tr').forEach(function(tr){tr.classList.toggle('hl',+tr.dataset.m===best);});
+  state.recMethod=best; doneStep(3);
+  if(scroll) document.getElementById('recResult').scrollIntoView({behavior:'smooth',block:'center'});
+}
+document.getElementById('recommendBtn').addEventListener('click',function(){
+  var a={flower:radioVal('flower'),goal:radioVal('goal'),time:radioVal('time'),equip:radioVal('equip')};
+  var warn=document.getElementById('recWarn');
+  if(!a.flower||!a.goal||!a.time||!a.equip){warn.textContent='Em cần trả lời đủ cả 4 câu để app đề xuất chính xác nhé.'; return;}
+  warn.textContent='';
+  showRec(a,true);
+  saveAll();
+});
+document.getElementById('recAgainBtn').addEventListener('click',function(){
+  document.getElementById('recResult').classList.remove('show');
+  document.getElementById('t3').scrollIntoView({behavior:'smooth'});
+});
+/* Bảng so sánh ở Tab 2: học sinh chọn đáp án cho từng ô - tự kiểm tra mức hiểu 5 phương pháp */
+var CMP_OK={
+  'cmp-1-time':'2–4 tuần',
+  'cmp-1-flower':'Oải hương, phi yến; hồng/cẩm tú cầu treo riêng',
+  'cmp-1-cond':'Ấm · tối · khô · thoáng gió, bó cách nhau',
+  'cmp-1-strong':'Đơn giản nhất, gần như không tốn kém',
+  'cmp-1-weak':'Chậm nhất; dễ mốc nếu ẩm, phai màu nếu sáng',
+  'cmp-2-time':'Vài phút + 10–36 giờ nguội',
+  'cmp-2-flower':'Hồng, cúc lá nhám, vạn thọ nhiều cánh',
+  'cmp-2-cond':'Đợt quay ngắn, có cốc nước kèm, thử trước 1–2 bông',
+  'cmp-2-strong':'Nhanh nhất; giữ màu/hình tốt',
+  'cmp-2-weak':'Dễ cháy nếu quay quá lâu; cần giám sát',
+  'cmp-3-time':'1–3 tuần',
+  'cmp-3-flower':'Hoa bướm, tử đinh hương nhỏ, phẳng',
+  'cmp-3-cond':'Ấm, khô; thay giấy sau tuần đầu',
+  'cmp-3-strong':'Làm tranh/thẻ phẳng rất đẹp; rẻ',
+  'cmp-3-weak':'Mất hình 3D; không hợp hoa mọng nước',
+  'cmp-4-time':'Vài giờ',
+  'cmp-4-flower':'Thanh cúc, hoa cúc nhỏ gọn nhiều cánh',
+  'cmp-4-cond':'Lò đối lưu ~38°C, thông gió tốt',
+  'cmp-4-strong':'Nhanh, khô đều',
+  'cmp-4-weak':'Chỉ dùng lò đối lưu; cần giám sát',
+  'cmp-5-time':'2–4 ngày → 21 ngày tùy vật liệu',
+  'cmp-5-flower':'Hoa lớn mỏng manh: loa kèn',
+  'cmp-5-cond':'Chất hút ẩm khô hoàn toàn; nơi ấm, khô, thoáng',
+  'cmp-5-strong':'Giữ hình & màu tốt nhất',
+  'cmp-5-weak':'Tốn vật liệu; lấy hoa ra phải rất nhẹ tay'
+};
+function cmpCheck(){
+  var ok=0,total=0;
+  Object.keys(CMP_OK).forEach(function(id){
+    var el=document.getElementById(id); if(!el) return; total++;
+    var good=el.value===CMP_OK[id];
+    el.classList.toggle('ok',good);
+    el.classList.toggle('bad',!good&&!!el.value);
+    if(good) ok++;
+  });
+  var sc=document.getElementById('cmpScore');
+  sc.textContent='Đúng '+ok+'/'+total+' ô';
+  sc.style.color=(ok===total)?'var(--ok)':(ok>=15?'#b45309':'#dc2626');
+  if(ok===total) toast('Xuất sắc! Em đã nắm chắc cả 5 phương pháp ');
+  saveAll();
+}
+document.getElementById('cmpCheckBtn').addEventListener('click',cmpCheck);
+document.getElementById('cmpResetBtn').addEventListener('click',function(){
+  document.querySelectorAll('.cmp-sel').forEach(function(el){el.value='';el.classList.remove('ok','bad');});
+  document.getElementById('cmpScore').textContent='';
+  saveAll();
+});
+document.querySelectorAll('.cmp-sel').forEach(function(el){
+  el.addEventListener('change',function(){el.classList.remove('ok','bad');});
+});
+
+/* radio card highlight */
+document.querySelectorAll('.radio-card input').forEach(function(r){
+  r.addEventListener('change',function(){
+    r.closest('.radio-grid').querySelectorAll('.radio-card').forEach(function(c){c.classList.remove('sel');});
+    r.closest('.radio-card').classList.add('sel');
+  });
+});
+document.getElementById('toPlanBtn').addEventListener('click',function(){
+  if(lastRec){document.getElementById('pMethod').value=String(lastRec); refreshMethodDeps();}
+  goTab('t4'); saveAll();
+  toast('Đã mang phương pháp đề xuất sang Tab 4 ');
+});
+
+/* ---------- Home check ---------- */
+document.getElementById('homeCheckBtn').addEventListener('click',function(){
+  var p=document.getElementById('homePlace').value,h=document.getElementById('homeHum').value,c=document.getElementById('homeCheck').value;
+  var box=document.getElementById('homeBox'),list=document.getElementById('homeList'),title=document.getElementById('homeTitle');
+  if(!p||!h||!c){title.textContent='Hãy chọn đủ 3 mục nhé.'; box.className='dual bad'; list.innerHTML=''; document.getElementById('homeResult').classList.add('show'); return;}
+  var bads=[p,h].filter(function(v){return v==='bad';}).length;
+  var mids=[p,h].filter(function(v){return v==='mid';}).length;
+  var items=[];
+  if(p==='bad') items.push('Đổi nơi đặt: tránh nhà tắm/bếp/ban công nắng - chọn phòng khô, râm, thoáng nhất trong nhà.');
+  if(p==='mid') items.push('Nơi đặt tạm ổn: che sáng thêm (tủ, hộp giấy có lỗ thoáng) để giảm phai màu.');
+  if(h==='bad') items.push('Phòng đang ẩm: đặt kèm gói hút ẩm trong khu vực sấy, tránh phơi/sấy vào những ngày mưa ẩm kéo dài, hoặc cân nhắc phương pháp có chất hút ẩm (2 hoặc 5).');
+  if(h==='mid') items.push('Độ ẩm trung bình: giữ cửa sổ/cửa phòng mở thoáng vào lúc trời khô để hơi ẩm thoát ra.');
+  if(c==='bad') items.push('Em ít kiểm tra được: ưu tiên phương pháp ít cần theo dõi (treo phơi hoặc ép) và đặt nhắc hẹn kiểm tra trên điện thoại.');
+  if(c==='mid') items.push('Đặt lịch kiểm tra cố định (ví dụ tối thứ 3 và thứ 6) và ghi vào nhật ký ở Tab 5.');
+  if(c==='good') items.push('Tần suất kiểm tra rất tốt - hãy ghi nhật ký đều ở Tab 5, đó là bằng chứng thuyết trình của nhóm.');
+  if(bads===0&&mids===0){title.textContent=' Điều kiện tại nhà: TỐI ƯU - bắt đầu được ngay.'; box.className='dual ok';}
+  else if(bads===0){title.textContent=' Điều kiện tại nhà: KHÁ - cải thiện 1–2 điểm dưới đây là đạt tối ưu.'; box.className='dual warn';}
+  else{title.textContent=' Điều kiện tại nhà: CHƯA ĐẠT - hãy xử lý các điểm dưới đây trước khi bắt đầu, hoặc đổi phương pháp.'; box.className='dual bad';}
+  if(items.length===0) items.push('Mọi yếu tố đều đạt. Duy trì đúng như vậy trong suốt quá trình sấy.');
+  list.innerHTML=''; items.forEach(function(t){var li=document.createElement('li'); li.textContent=t; list.appendChild(li);});
+  document.getElementById('homeResult').classList.add('show');
+});
+
+/* ---------- Plan: method dependencies ---------- */
+var COND={
+  1:['Nơi treo ấm, tối/râm, khô, thoáng gió; cách trần ≥ ~15 cm','Các bó cách nhau; mỗi bó ≤ ~10 bông cùng loài (hoa lớn treo riêng)','Buộc dây chun vừa tay, không quá chặt','Kiểm tra độ giòn ở mép cánh trước khi thu hoạch (2–4 tuần)'],
+  2:['Có người lớn giám sát khi dùng lò vi sóng','Không cho vật kim loại vào lò vi sóng','Đặt kèm cốc nước nông trong lò; quay từng đợt ngắn, kiểm tra liên tục','Để hộp nguội yên 10–36 giờ, xa trẻ em và vật nuôi, trước khi lấy hoa'],
+  3:['Giấy luôn khô, không bóng, thấm hút tốt','Thay toàn bộ giấy mới sau tuần đầu','Vật nặng đè đều; nơi để ấm, khô','Hoa xếp một lớp duy nhất, không chồng lớp'],
+  4:['Lò đối lưu chỉnh được ~38–40°C (không dùng lò thường)','Có người lớn giám sát trong suốt thời gian sấy','Hoa được đỡ trên lưới kim loại, không dùng khay nhựa trong lò','Để hoa nguội hẳn trên giá phơi rồi mới cầm'],
+  5:['Chất hút ẩm hoàn toàn khô trước khi dùng','Hộp đựng chắc chắn, đúng loại (kín với silica gel, mở với borax/cát)','Nơi để hộp ấm, khô, thoáng (với hộp mở)','Chỉ lấy hoa ra khi mép cánh giòn như giấy; đỡ hoa từ phía dưới']
+};
+var MAT={
+  1:['Hoa tươi mới bắt đầu nở (+ bông dự phòng)','Dây chun hoặc dây thừng/raffia','Móc, đinh hoặc móc áo; kẹp giấy làm móc chữ S','Keo xịt tóc / chất phủ hoa (tùy chọn)'],
+  2:['Hoa tươi nở ~một nửa (+ thử trước 1–2 bông)','Hộp dùng được trong lò vi sóng','Silica gel (hoặc borax + bột ngô tỉ lệ bằng nhau)','Cốc nước nông, tăm, bàn chải mịn','Lò vi sóng + người lớn giám sát'],
+  3:['Hoa nhỏ, phẳng (+ bông dự phòng)','Giấy báo / giấy thấm / giấy khô không bóng','Bìa cứng hoặc bìa sóng','Vật nặng: từ điển, sách dày, hộp nặng'],
+  4:['Hoa nhỏ gọn, nhiều cánh','Lưới kim loại mắt nhỏ','Lò đối lưu chỉnh được nhiệt thấp','Giá phơi để làm nguội','Người lớn giám sát'],
+  5:['Hoa tươi nở ~một nửa, sấy ngay sau khi hái','Chất hút ẩm: silica gel / borax + bột ngô / cát mịn','Hộp đựng phù hợp (kín hoặc mở)','Bàn chải nhỏ, tăm kiểm tra']
+};
+var TIMELINE={
+  1:[['Ngày 0','Hái/chọn hoa, tước lá, bó hoa, treo ngược tại nơi đã chọn; chụp ảnh hoa tươi để đối chứng',''],['Ngày 3–4','Kiểm tra nhanh: có mùi ẩm/mốc không, bó có bị xô lệch không',''],['Tuần 1','Kiểm tra độ ẩm của thân và cánh; ghi nhật ký Tab 5',''],['Tuần 2','Thử độ giòn ở mép cánh của 1 bông dự phòng',''],['Tuần 3–4','Khi cánh giòn như giấy: thu hoạch nhẹ tay, (tùy chọn) xịt phủ bảo vệ, hoàn thiện sản phẩm','']],
+  2:[['Ngày 0 - chuẩn bị','Cắt thân 2,5–5 cm, chuẩn bị hộp và silica gel; thử trước 1–2 bông',''],['Ngày 0 - quay','Vùi hoa trong silica gel, đặt cốc nước kèm, quay ~2 phút + các đợt 1 phút, kiểm tra bằng tăm',''],['Ngày 0–1','Hé nắp hộp, để nguội yên 10–36 giờ, xa trẻ em/vật nuôi',''],['Ngày 1–2','Lấy hoa ra nhẹ nhàng, phủi sạch hạt, ghi kết quả và hoàn thiện sản phẩm','']],
+  3:[['Ngày 0','Xếp hoa một lớp giữa giấy khô, đặt vật nặng đè đều; ghi ngày bắt đầu',''],['Ngày 7','Mở ra, thay toàn bộ giấy mới khô, ép tiếp; kiểm tra dấu hiệu mốc',''],['Ngày 14','Kiểm tra độ giòn/mỏng của hoa qua lớp giấy; ghi nhật ký',''],['Ngày 14–21','Khi hoa giòn như giấy: gỡ ra nhẹ tay, làm sản phẩm phẳng (tranh/thẻ/thẻ đánh dấu trang)','']],
+  4:[['Ngày 0 - chuẩn bị','Cắt lưới, xỏ thân hoa qua mắt lưới; làm nóng lò đối lưu ở ~38°C',''],['Ngày 0 - sấy','Sấy vài giờ dưới giám sát của người lớn; kiểm tra định kỳ độ khô',''],['Ngày 0 - nguội','Lấy ra để nguội hẳn trên giá phơi, ghi kết quả, hoàn thiện sản phẩm','']],
+  5:[['Ngày 0','Rải chất hút ẩm, đặt hoa đứng, vùi kín; ghi rõ vật liệu và ngày bắt đầu lên hộp',''],['Ngày 2–4','Chỉ với silica gel: kiểm tra bằng tăm ở 1 bông, xem hạt đã ngả hồng chưa. Với borax/cát: chưa mở hộp, tiếp tục chờ',''],['Ngày 4–7','Với silica gel: thử độ giòn, thu hoạch khi đạt. Với borax/cát: tiếp tục chờ',''],['Ngày 5–21','Thu hoạch theo vật liệu (borax 5–14 ngày, cát 14–21 ngày); đỡ hoa từ phía dưới, phủi sạch hạt','']]
+};
+function refreshMethodDeps(){
+  var m=document.getElementById('pMethod').value;
+  var cl=document.getElementById('pCondList'), ml=document.getElementById('pMatList');
+  cl.innerHTML=''; ml.innerHTML='';
+  if(!m){cl.innerHTML='<p class="small">- Chưa chọn phương pháp -</p>'; ml.innerHTML='<p class="small">- Chưa chọn phương pháp -</p>'; buildTimeline(''); return;}
+  COND[m].forEach(function(t,i){cl.innerHTML+='<label class="check"><input type="checkbox" class="pcond" data-i="'+i+'"><span>'+t+'</span></label>';});
+  MAT[m].forEach(function(t,i){ml.innerHTML+='<label class="check"><input type="checkbox" class="pmat" data-i="'+i+'"><span>'+t+'</span></label>';});
+  restoreChecks(); buildTimeline(m);
+}
+function buildTimeline(m){
+  var tb=document.getElementById('tlBody'); tb.innerHTML='';
+  if(!m){tb.innerHTML='<tr class="tl-empty"><td colspan="3" style="text-align:center;color:var(--ink3);font-size:13.5px">- Chưa chọn phương pháp: chọn phương pháp ở mục Phương pháp đã chọn phía trên, các bước theo thời gian của phương pháp đó sẽ hiện tại đây -</td></tr>'; return;}
+  TIMELINE[m].forEach(function(r,i){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td contenteditable="true">'+r[0]+'</td><td contenteditable="true">'+r[1]+'</td><td><input type="text" class="tl-who" placeholder="Họ tên"></td>';
+    tb.appendChild(tr);
+  });
+}
+document.getElementById('pMethod').addEventListener('change',function(){refreshMethodDeps(); saveAll();});
+
+/* ---------- Observation log ---------- */
+function addObsRow(data){
+  var tb=document.querySelector('#obsTable tbody');
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><input type="text" class="o-date" placeholder="VD: Ngày 2 · 10/11 · 9h sáng"></td><td contenteditable="true" class="o-note"></td><td contenteditable="true" class="o-crisp"></td><td contenteditable="true" class="o-mold"></td><td><button class="btn ghost sm o-del" title="Xóa dòng">✕</button></td>';
+  if(data){tr.querySelector('.o-date').value=data.d||''; tr.querySelector('.o-note').textContent=data.n||''; tr.querySelector('.o-crisp').textContent=data.c||''; tr.querySelector('.o-mold').textContent=data.m||'';}
+  tr.querySelector('.o-del').addEventListener('click',function(){tr.remove(); saveAll();});
+  tb.appendChild(tr);
+}
+document.getElementById('addObsBtn').addEventListener('click',function(){addObsRow();});
+
+/* ---------- Rubric ---------- */
+var CRIT=['Giữ được hình dáng (3D hoặc phẳng theo mục tiêu)','Giữ được màu sắc, nhận ra đúng loài hoa','Khô hoàn toàn - cánh giòn, không còn ẩm','Không mốc, không mùi lạ, không rụng vụn','Giải thích được vì sao điều kiện đã chọn là tối ưu'];
+var rubricWrap=document.getElementById('rubric');
+CRIT.forEach(function(c,i){
+  var d=document.createElement('div'); d.className='quiz-q rb-row'; d.style.marginBottom='10px';
+  d.innerHTML='<b style="flex:1 1 auto">'+(i+1)+'. '+c+'</b><div style="flex:none;white-space:nowrap">'+
+    [1,2,3,4].map(function(v){return '<label style="display:inline-block;margin-right:12px"><input type="radio" name="rb'+i+'" value="'+v+'"> '+v+'</label>';}).join('')+'</div>';
+  rubricWrap.appendChild(d);
+});
+function rubricScore(){
+  var t=0; for(var i=0;i<5;i++){var el=document.querySelector('input[name="rb'+i+'"]:checked'); if(el) t+=+el.value;}
+  document.getElementById('rubricTotal').textContent='Tổng: '+t+' / 20';
+  document.getElementById('rubricMsg').textContent= t>=17?'- Rất tốt! Hãy dùng nhật ký Tab 5 làm bằng chứng khi trình bày.':t>=13?'- Khá. Xem tiêu chí nào thấp nhất và giải thích bằng điều kiện thực tế.':t>=8?'- Đạt một phần. Phần phản tư trung thực về nguyên nhân quan trọng hơn điểm số.':t>0?'- Hãy hoàn thiện sản phẩm/phản tư rồi chấm lại.':'';
+  return t;
+}
+rubricWrap.addEventListener('change',function(){rubricScore(); saveAll();});
+
+/* ---------- Save / load (localStorage của trình duyệt) ---------- */
+var loading=false;
+function gather(){
+  var g={v:2};
+  ['pGroup','pClass','pMembers','pFlower','pStart','pMethod','pReason','pPlace','pMatExtra','pPredict','pSuccess','pRisk','r1','r2','r3','predFlower','predColorNow','predColorAfter','predShape','predWhy'].forEach(function(id){g[id]=document.getElementById(id).value;});
+  g.cond=Array.prototype.map.call(document.querySelectorAll('.pcond'),function(c){return c.checked;});
+  g.mat=Array.prototype.map.call(document.querySelectorAll('.pmat'),function(c){return c.checked;});
+  g.safe=Array.prototype.map.call(document.querySelectorAll('.safe'),function(c){return c.checked;});
+  g.timeline=Array.prototype.map.call(Array.prototype.filter.call(document.querySelectorAll('#tlBody tr'),function(tr){return !tr.classList.contains('tl-empty');}),function(tr){var tds=tr.querySelectorAll('td'); var who=tr.querySelector('.tl-who'); return [tds[0].textContent,tds[1].textContent,who?who.value:(tds[2]?tds[2].textContent:'')];});
+  g.obs=Array.prototype.map.call(document.querySelectorAll('#obsTable tbody tr'),function(tr){return {d:tr.querySelector('.o-date').value,n:tr.querySelector('.o-note').textContent,c:tr.querySelector('.o-crisp').textContent,m:tr.querySelector('.o-mold').textContent,};});
+  g.rb=[]; for(var i=0;i<5;i++){var el=document.querySelector('input[name="rb'+i+'"]:checked'); g.rb.push(el?el.value:'');}
+  /* Tab 1: thử thách */
+  g.ch={mold:chVals('chM'),fade:chVals('chF'),diff:document.getElementById('chDiff').value,solved:chSolved};
+  /* Tab 3: 4 câu chọn phương pháp + đánh giá điều kiện nhà */
+  g.rec={flower:radioVal('flower')||'',goal:radioVal('goal')||'',time:radioVal('time')||'',equip:radioVal('equip')||''};
+  g.lastRec=lastRec;
+  g.home={place:document.getElementById('homePlace').value,hum:document.getElementById('homeHum').value,check:document.getElementById('homeCheck').value};
+  /* Tab 1: trạng thái mô phỏng 6 điều kiện */
+  g.sim={temp:document.getElementById('simTemp').value,hum:document.getElementById('simHum').value,light:document.getElementById('simLight').value,wind:document.getElementById('simWindSel').value,time:document.getElementById('simTime').value,petal:document.getElementById('simPetal').value};
+  g.simActive=activeCond;
+  /* Tab đang mở */
+  var ap=document.querySelector('.tab-panel.active'); g.tab=ap?ap.id:'t1';
+  var cmp={}; document.querySelectorAll('.cmp-sel').forEach(function(el){cmp[el.id]=el.value;}); g.cmp=cmp;
+  return g;
+}
+function saveAll(){
+  if(loading) return;
+  try{localStorage.setItem(STORE,JSON.stringify(gather()));}catch(e){}
+  var has=document.getElementById('pGroup').value&&document.getElementById('pMethod').value;
+  if(has){doneStep(4); state.planSaved=true;}
+  document.getElementById('planStatus').textContent=' Đã tự lưu trên trình duyệt này lúc '+new Date().toLocaleTimeString('vi-VN');
+}
+function setRadio(name,val){
+  if(!val) return;
+  var el=document.querySelector('input[name="'+name+'"][value="'+val+'"]');
+  if(!el) return;
+  el.checked=true;
+  var card=el.closest('.radio-card');
+  if(card){card.closest('.radio-grid').querySelectorAll('.radio-card').forEach(function(c){c.classList.remove('sel');}); card.classList.add('sel');}
+}
+function restoreChecks(){
+  var raw; try{raw=localStorage.getItem(STORE);}catch(e){}
+  if(!raw) return; var g=JSON.parse(raw);
+  if(g.cond) document.querySelectorAll('.pcond').forEach(function(c,i){if(g.cond[i])c.checked=true;});
+  if(g.mat) document.querySelectorAll('.pmat').forEach(function(c,i){if(g.mat[i])c.checked=true;});
+}
+function loadAll(){
+  loading=true;
+  var raw; try{raw=localStorage.getItem(STORE);}catch(e){}
+  // defaults first
+  refreshMethodDeps(); addObsRow(); addObsRow();
+  if(!raw){loading=false; return;}
+  var g; try{g=JSON.parse(raw);}catch(e){loading=false; return;}
+  ['pGroup','pClass','pMembers','pFlower','pStart','pMethod','pReason','pPlace','pMatExtra','pPredict','pSuccess','pRisk','r1','r2','r3','predFlower','predColorNow','predColorAfter','predShape','predWhy'].forEach(function(id){if(g[id]!=null) document.getElementById(id).value=g[id];});
+  refreshMethodDeps();
+  if(g.safe) document.querySelectorAll('.safe').forEach(function(c,i){if(g.safe[i])c.checked=true;});
+  if(g.timeline&&g.timeline.length){
+    var tb=document.getElementById('tlBody'); tb.innerHTML='';
+    g.timeline.forEach(function(r){var tr=document.createElement('tr'); tr.innerHTML='<td contenteditable="true"></td><td contenteditable="true"></td><td><input type="text" class="tl-who" placeholder="Họ tên"></td>'; var tds=tr.querySelectorAll('td'); tds[0].textContent=r[0]||''; tds[1].textContent=r[1]||''; tr.querySelector('.tl-who').value=r[2]||''; tb.appendChild(tr);});
+  } else { buildTimeline(document.getElementById('pMethod').value); }
+  if(g.obs&&g.obs.length){document.querySelector('#obsTable tbody').innerHTML=''; g.obs.forEach(function(o){addObsRow(o);});}
+  if(g.rb) g.rb.forEach(function(v,i){if(v){var el=document.querySelector('input[name="rb'+i+'"][value="'+v+'"]'); if(el) el.checked=true;}});
+  /* Tab 1 + Tab 3: khôi phục lựa chọn */
+  if(g.sim){var sm={simTemp:g.sim.temp,simHum:g.sim.hum,simLight:g.sim.light,simWindSel:g.sim.wind,simTime:g.sim.time,simPetal:g.sim.petal}; Object.keys(sm).forEach(function(id){if(sm[id]) document.getElementById(id).value=sm[id];}); simUpdate();}
+  if(g.simActive){setActiveCond(g.simActive);}
+  if(g.ch){var cmap={mold:'chM',fade:'chF'}; Object.keys(cmap).forEach(function(k){if(g.ch[k]) CH_DEFS.forEach(function(d){var el=document.getElementById(cmap[k]+'-'+d[0]); if(el&&g.ch[k][d[0]]) el.value=g.ch[k][d[0]];});}); if(g.ch.diff!=null) document.getElementById('chDiff').value=g.ch.diff; if(g.ch.solved) chSolved=g.ch.solved;}
+  if(g.rec){setRadio('flower',g.rec.flower); setRadio('goal',g.rec.goal); setRadio('time',g.rec.time); setRadio('equip',g.rec.equip);
+    if(g.rec.flower&&g.rec.goal&&g.rec.time&&g.rec.equip){showRec(g.rec,false);}}
+  if(g.home){document.getElementById('homePlace').value=g.home.place||''; document.getElementById('homeHum').value=g.home.hum||''; document.getElementById('homeCheck').value=g.home.check||'';
+    if(g.home.place&&g.home.hum&&g.home.check){document.getElementById('homeCheckBtn').click();}}
+  rubricScore();
+  if(g.cmp) Object.keys(g.cmp).forEach(function(id){var el=document.getElementById(id); if(el) el.value=g.cmp[id];});
+  chHintGate();
+  if(g.pGroup&&g.pMethod) doneStep(4);
+  loading=false;
+  if(g.tab&&g.tab!=='t1'){goTab(g.tab);}
+  document.getElementById('planStatus').textContent=' Đã khôi phục nội dung đã lưu trên trình duyệt này';
+}
+/* Lưu bằng ủy quyền sự kiện ở cấp document: bắt được cả ô được tạo động
+   (checklist điều kiện/vật liệu, dòng nhật ký) và ô contenteditable,
+   mà không dựng lại giao diện nên không mất vị trí cuộn/con trỏ. */
+document.addEventListener('input',function(){saveAll();});
+document.addEventListener('change',function(){saveAll();});
+tabBtns.forEach(function(b){b.addEventListener('click',function(){setTimeout(saveAll,60);});});
+window.addEventListener('beforeunload',function(){saveAll();});
+
+/* ---------- Print / copy ---------- */
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function buildPrint(){
+  var g=gather();
+  var mName=document.querySelector('#pMethod option:checked')?document.querySelector('#pMethod option:checked').textContent:'-';
+  var conds=Array.prototype.map.call(document.querySelectorAll('.pcond'),function(c){return (c.checked?'☑ ':'☐ ')+c.parentElement.textContent.trim();});
+  var mats=Array.prototype.map.call(document.querySelectorAll('.pmat'),function(c){return (c.checked?'☑ ':'☐ ')+c.parentElement.textContent.trim();});
+  var html='<h1>KẾ HOẠCH LÀM HOA KHÔ TẠI NHÀ</h1>';
+  html+='<p><b>Nhóm:</b> '+esc(g.pGroup)+' &nbsp;·&nbsp; <b>Lớp:</b> '+esc(g.pClass)+'<br><b>Thành viên:</b> '+esc(g.pMembers)+'<br><b>Loài hoa:</b> '+esc(g.pFlower)+' &nbsp;·&nbsp; <b>Ngày bắt đầu:</b> '+esc(g.pStart)+'</p>';
+  html+='<h2>Phương pháp và lý do chọn</h2><p><b>'+esc(mName)+'</b></p><p>'+esc(g.pReason)+'</p>';
+  html+='<h2>Điều kiện tối ưu cam kết</h2><p><b>Nơi đặt:</b> '+esc(g.pPlace)+'</p><ul>'+conds.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+'</ul>';
+  html+='<h2>Vật liệu</h2><ul>'+mats.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+(g.pMatExtra?'<li>'+esc(g.pMatExtra)+'</li>':'')+'</ul>';
+  html+='<h2>Các bước theo thời gian & phân công</h2><table><tr><th>Thời điểm</th><th>Việc cần làm</th><th>Người phụ trách</th></tr>'+g.timeline.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td><td>'+esc(r[2])+'</td></tr>';}).join('')+'</table>';
+  html+='<h2>Dự đoán · Tiêu chí thành công · Rủi ro</h2><p><b>Dự đoán:</b> '+esc(g.pPredict)+'</p><p><b>Thành công khi:</b> '+esc(g.pSuccess)+'</p><p><b>Rủi ro &amp; dự phòng:</b> '+esc(g.pRisk)+'</p>';
+  if(g.obs&&g.obs.some(function(o){return o.d||o.n;})){
+    html+='<h2>Nhật ký theo dõi</h2><table><tr><th>Mốc thời gian</th><th>Quan sát</th><th>Độ giòn</th><th>Ẩm/mốc</th></tr>'+g.obs.map(function(o){return '<tr><td>'+esc(o.d)+'</td><td>'+esc(o.n)+'</td><td>'+esc(o.c)+'</td><td>'+esc(o.m)+'</td></tr>';}).join('')+'</table>';
+    html+='<h2>Tự đánh giá và phản tư</h2><p><b>Điểm tự đánh giá:</b> '+rubricScore()+' / 20</p><p><b>1. Điều kiện ảnh hưởng mạnh nhất:</b> '+esc(g.r1)+'</p><p><b>2. Nếu làm lại sẽ đổi:</b> '+esc(g.r2)+'</p><p><b>3. Sản phẩm dùng để:</b> '+esc(g.r3)+'</p>';
+  }
+  html+='<p style="font-size:12px;color:#555;margin-top:18px">Nguồn tham khảo: wikiHow - How to Dry Flowers (wikihow.com/Dry-Flowers), nội dung đã viết lại cho học tập.</p>';
+  document.getElementById('printArea').innerHTML=html;
+}
+document.getElementById('printBtn').addEventListener('click',function(){buildPrint(); window.print();});
+document.getElementById('printBtn2').addEventListener('click',function(){buildPrint(); window.print();});
+document.getElementById('clearBtn').addEventListener('click',function(){
+  if(!confirm('Xóa toàn bộ kế hoạch và nhật ký đã lưu trên thiết bị này?')) return;
+  try{localStorage.removeItem(STORE);}catch(e){}
+  location.reload();
+});
+
+/* ---------- Toast ---------- */
+var toastTimer=null;
+function toast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('show');},2600);
+}
+
+loadAll();
+rubricScore();
+})();
+</script>
+</body>
+</html>
