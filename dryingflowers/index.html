@@ -81,6 +81,14 @@ header.hero::after{width:260px;height:260px;left:-70px;bottom:-150px;background:
 .tab-btn.active{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 4px 14px rgba(79,70,229,.28)}
 .tab-panel{display:none}
 .tab-panel.active{display:block;animation:fade .25s ease}
+.prog{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:14px;box-shadow:var(--sh);flex-wrap:wrap}
+.prog b{font-size:13.5px;white-space:nowrap}
+.prog .track{flex:1;min-width:120px;height:10px;background:var(--pri-50);border-radius:99px;overflow:hidden}
+.prog .fill{height:100%;width:0;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:99px;transition:width .3s ease}
+.prog .pct{font-weight:800;color:var(--pri);min-width:42px;text-align:right}
+.prog .note{font-size:12.5px;color:var(--ink3)}
+.tabs button.locked{opacity:.55}
+.tabs button .locktag{font-weight:700}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 /* Cards & layout */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px}
@@ -215,15 +223,16 @@ textarea{resize:vertical;min-height:64px}
   <nav class="tabs no-print">
     <div class="tab-rail" role="tablist">
       <button class="tab-btn active" data-tab="t1" role="tab">1 · Nguyên lý</button>
-      <button class="tab-btn" data-tab="t2" role="tab">2 · 5 phương pháp</button>
-      <button class="tab-btn" data-tab="t3" role="tab">3 · Chọn điều kiện tối ưu</button>
-      <button class="tab-btn" data-tab="t4" role="tab">4 · Kế hoạch tại nhà</button>
-      <button class="tab-btn" data-tab="t5" role="tab">5 · Theo dõi &amp; đánh giá</button>
+      <button class="tab-btn" data-tab="t2" role="tab">2 · 5 phương pháp<span class="locktag"></span></button>
+      <button class="tab-btn" data-tab="t3" role="tab">3 · Chọn điều kiện tối ưu<span class="locktag"></span></button>
+      <button class="tab-btn" data-tab="t4" role="tab">4 · Kế hoạch tại nhà<span class="locktag"></span></button>
+      <button class="tab-btn" data-tab="t5" role="tab">5 · Theo dõi &amp; đánh giá<span class="locktag"></span></button>
     </div>
   </nav>
 
   <!-- ============ TAB 1 ============ -->
   <section class="tab-panel active" id="t1">
+    <div class="prog"><b>Mức hoàn thành</b><div class="track"><div class="fill" id="progFill-t1"></div></div><span class="pct" id="progPct-t1">0%</span><span class="note" id="progNote-t1"></span></div>
     <div class="card">
       <h2>Sấy khô hoa là làm cho nước rời khỏi hoa - một cách có kiểm soát</h2>
       <p>Hoa tươi chứa rất nhiều nước trong cánh và thân. Khi nước thoát ra <b>từ từ và đều</b>, cánh hoa giữ được hình dáng; đồng thời môi trường khô khiến nấm mốc và vi khuẩn khó phát triển, nên hoa không thối. Ngược lại, nếu hoa khô quá chậm trong nơi ẩm và bí, mốc sẽ đến trước khi hoa kịp khô; nếu khô quá gắt (nhiệt cao, quay quá lâu), cánh sẽ cháy, giòn vụn hoặc mất màu.</p>
@@ -244,12 +253,12 @@ textarea{resize:vertical;min-height:64px}
         </div>
         <div class="sim-panel" id="simPanel">
           <h3>Mô phỏng: thay đổi điều kiện, xem hoa biến đổi</h3>
-          <div class="sim-ctl" id="ctl-simTemp"><label> Nhiệt độ nơi sấy</label><select id="simTemp"><option value="cold">Lạnh (phòng lạnh, mùa mưa lạnh)</option><option value="warm" selected>Ấm vừa (khoảng 25-38°C)</option><option value="hot">Quá nóng (lò nhiệt cao, quay quá lâu)</option></select></div>
-          <div class="sim-ctl" id="ctl-simHum"><label> Độ ẩm không khí</label><select id="simHum"><option value="dry" selected>Khô ráo</option><option value="normal">Bình thường</option><option value="humid">Ẩm cao (mưa nhiều ngày, gần nhà tắm)</option></select></div>
-          <div class="sim-ctl" id="ctl-simLight"><label> Ánh sáng</label><select id="simLight"><option value="dark" selected>Tối / râm mát</option><option value="light">Sáng vừa (gần cửa sổ, không nắng trực tiếp)</option><option value="sun">Nắng gắt chiếu trực tiếp</option></select></div>
-          <div class="sim-ctl" id="ctl-simWindSel"><label> Thông gió</label><select id="simWindSel"><option value="good" selected>Thoáng gió tốt, các bó cách nhau</option><option value="low">Ít gió (phòng ít mở cửa)</option><option value="sealed">Bí kín (hộp/tủ đóng chặt, bó treo sát nhau)</option></select></div>
-          <div class="sim-ctl" id="ctl-simTime"><label> Thời gian sấy</label><select id="simTime"><option value="early">Lấy ra quá sớm</option><option value="right" selected>Vừa đủ (cánh vừa giòn như giấy)</option><option value="long">Để quá lâu sau khi đã khô</option></select></div>
-          <div class="sim-ctl" id="ctl-simPetal"><label> Loại cánh hoa</label><select id="simPetal"><option value="thin">Cánh mỏng (hoa mùa xuân)</option><option value="medium" selected>Cánh vừa (hoa hồng, cúc)</option><option value="thick">Cánh dày, mọng nước</option></select></div>
+          <div class="sim-ctl" id="ctl-simTemp"><label> Nhiệt độ nơi sấy</label><select id="simTemp"><option value="" selected>---</option><option value="cold">Lạnh (phòng lạnh, mùa mưa lạnh)</option><option value="warm">Ấm vừa (khoảng 25-38°C)</option><option value="hot">Quá nóng (lò nhiệt cao, quay quá lâu)</option></select></div>
+          <div class="sim-ctl" id="ctl-simHum"><label> Độ ẩm không khí</label><select id="simHum"><option value="" selected>---</option><option value="dry">Khô ráo</option><option value="normal">Bình thường</option><option value="humid">Ẩm cao (mưa nhiều ngày, gần nhà tắm)</option></select></div>
+          <div class="sim-ctl" id="ctl-simLight"><label> Ánh sáng</label><select id="simLight"><option value="" selected>---</option><option value="dark">Tối / râm mát</option><option value="light">Sáng vừa (gần cửa sổ, không nắng trực tiếp)</option><option value="sun">Nắng gắt chiếu trực tiếp</option></select></div>
+          <div class="sim-ctl" id="ctl-simWindSel"><label> Thông gió</label><select id="simWindSel"><option value="" selected>---</option><option value="good">Thoáng gió tốt, các bó cách nhau</option><option value="low">Ít gió (phòng ít mở cửa)</option><option value="sealed">Bí kín (hộp/tủ đóng chặt, bó treo sát nhau)</option></select></div>
+          <div class="sim-ctl" id="ctl-simTime"><label> Thời gian sấy</label><select id="simTime"><option value="" selected>---</option><option value="early">Lấy ra quá sớm</option><option value="right">Vừa đủ (cánh vừa giòn như giấy)</option><option value="long">Để quá lâu sau khi đã khô</option></select></div>
+          <div class="sim-ctl" id="ctl-simPetal"><label> Loại cánh hoa</label><select id="simPetal"><option value="" selected>---</option><option value="thin">Cánh mỏng (hoa mùa xuân)</option><option value="medium">Cánh vừa (hoa hồng, cúc)</option><option value="thick">Cánh dày, mọng nước</option></select></div>
           <div class="sim-toprow">
           <div class="sim-stage">
             <svg width="260" height="170" viewBox="0 0 260 170" aria-label="Hoa mô phỏng thay đổi theo điều kiện">
@@ -312,6 +321,7 @@ textarea{resize:vertical;min-height:64px}
 
   <!-- ============ TAB 2 ============ -->
   <section class="tab-panel" id="t2">
+    <div class="prog"><b>Mức hoàn thành</b><div class="track"><div class="fill" id="progFill-t2"></div></div><span class="pct" id="progPct-t2">0%</span><span class="note" id="progNote-t2"></span></div>
     <div class="card">
       <h2>Các phương pháp làm hoa khô</h2>
       <p><b>Hướng dẫn:</b> HS lần lượt chọn từng phương pháp để xem loại hoa phù hợp, vật liệu cần thiết và quy trình cụ thể cho từng phương pháp.</p>
@@ -570,6 +580,7 @@ textarea{resize:vertical;min-height:64px}
 
   <!-- ============ TAB 3 ============ -->
   <section class="tab-panel" id="t3">
+    <div class="prog"><b>Mức hoàn thành</b><div class="track"><div class="fill" id="progFill-t3"></div></div><span class="pct" id="progPct-t3">0%</span><span class="note" id="progNote-t3"></span></div>
     <div class="card">
       <h2>Quy tắc chọn hoa đầu vào</h2>
       <ul class="tight">
@@ -697,6 +708,7 @@ textarea{resize:vertical;min-height:64px}
 
   <!-- ============ TAB 4 ============ -->
   <section class="tab-panel" id="t4">
+    <div class="prog"><b>Mức hoàn thành</b><div class="track"><div class="fill" id="progFill-t4"></div></div><span class="pct" id="progPct-t4">0%</span><span class="note" id="progNote-t4"></span></div>
     <div class="card">
       <h2>Kế hoạch làm hoa khô tại nhà của nhóm</h2>
       <p><b>Hướng dẫn:</b> HS thảo luận nhóm và điền đầy đủ các mục có dấu <span style="color:var(--bad);font-weight:700">*</span>. Sau khi hoàn thành, in kế hoạch và nộp lên canvas.</p>
@@ -764,6 +776,7 @@ textarea{resize:vertical;min-height:64px}
 
   <!-- ============ TAB 5 ============ -->
   <section class="tab-panel" id="t5">
+    <div class="prog"><b>Mức hoàn thành</b><div class="track"><div class="fill" id="progFill-t5"></div></div><span class="pct" id="progPct-t5">0%</span><span class="note" id="progNote-t5"></span></div>
     <div class="card">
       <h2>Nhật ký theo dõi trong lúc sấy</h2>
       <p><b>Hướng dẫn:</b> HS ghi chú lại màu sắc/hình dáng thay đổi, độ giòn khi thử mép cánh, và dấu hiệu ẩm/mốc theo mốc thời gian.</p>
@@ -804,7 +817,23 @@ var state={recMethod:null,quizDone:false,planSaved:false};
 
 /* ---------- Tabs ---------- */
 var tabBtns=document.querySelectorAll('.tab-btn');
+
+var viewedMethods={m1:true};
+var gateInit=false;
+var GATE={t2:'t1',t3:'t2',t4:'t3',t5:'t4'};
+function progT1(){var n=0; ['simTemp','simHum','simLight','simWindSel','simTime','simPetal'].forEach(function(id){if(document.getElementById(id).value!=='')n++;}); var p=n*10; if(chSolved.mold)p+=15; if(chSolved.fade)p+=15; if(document.getElementById('chDiff').value.trim())p+=10; return Math.min(100,Math.round(p));}
+function progT2(){var v=Object.keys(viewedMethods).filter(function(k){return viewedMethods[k];}).length; var c=0; Object.keys(CMP_OK).forEach(function(k){var el=document.getElementById(k); if(el&&el.value===CMP_OK[k])c++;}); return Math.min(100,Math.round(v*8+c/25*60));}
+function progT3(){var q=0; ['flower','goal','time','equip'].forEach(function(n){if(document.querySelector('input[name="'+n+'"]:checked'))q++;}); var pf=0; ['predFlower','predColorNow','predColorAfter','predShape','predWhy'].forEach(function(id){if(document.getElementById(id).value.trim())pf++;}); var h=0; ['homePlace','homeHum','homeCheck'].forEach(function(id){if(document.getElementById(id).value)h++;}); return Math.min(100,Math.round(q*6.25+pf*10+h*(25/3)));}
+function progT4(){var p=0; ['pGroup','pClass','pMembers','pFlower','pStart','pMethod','pWhy','pPlace'].forEach(function(id){var el=document.getElementById(id); if(el&&el.value.trim())p+=5;}); var m=document.getElementById('pMethod').value; if(m){var boxes=document.querySelectorAll('.pcond,.pmat'); var chk=document.querySelectorAll('.pcond:checked,.pmat:checked'); if(boxes.length)p+=Math.round(chk.length/boxes.length*20); var rows=document.querySelectorAll('#tlBody tr:not(.tl-empty)'); if(rows.length){var w=0; rows.forEach(function(tr){var inp=tr.querySelector('.tl-who'); if(inp&&inp.value.trim())w++;}); p+=Math.round(w/rows.length*15);}} ['pPredict','pSuccess','pRisk'].forEach(function(id){if(document.getElementById(id).value.trim())p+=5;}); p+=document.querySelectorAll('.safe:checked').length*(10/3); return Math.min(100,Math.round(p));}
+function progT5(){var rows=document.querySelectorAll('#obsTable tbody tr').length; var p=Math.min(20,rows*10); var rb=0; for(var i=0;i<5;i++){if(document.querySelector('input[name="rb'+i+'"]:checked'))rb++;} p+=rb*7; ['r1','r2','r3'].forEach(function(id){if(document.getElementById(id).value.trim())p+=15;}); return Math.min(100,Math.round(p));}
+function progOf(t){return t==='t1'?progT1():t==='t2'?progT2():t==='t3'?progT3():t==='t4'?progT4():progT5();}
+function isLocked(id){var prev=GATE[id]; if(!prev) return false; return progOf(prev)<70;}
+function updateGate(){
+  ['t1','t2','t3','t4','t5'].forEach(function(t){var p=progOf(t); var f=document.getElementById('progFill-'+t), pc=document.getElementById('progPct-'+t), nt=document.getElementById('progNote-'+t); if(f)f.style.width=p+'%'; if(pc)pc.textContent=p+'%'; if(nt){nt.textContent=(t==='t5')?(p>=100?'Đã hoàn thành trang cuối.':'Hoàn thành các mục ở trang này để kết thúc dự án.'):(p>=70?'Đã đạt 70% - trang tiếp theo đã mở.':'Đạt ít nhất 70% để mở trang tiếp theo.');}});
+  document.querySelectorAll('.tab-btn').forEach(function(b){var lk=isLocked(b.dataset.tab); b.classList.toggle('locked',lk); var lt=b.querySelector('.locktag'); if(lt)lt.textContent=lk?' · Khóa':'';});
+}
 function goTab(id){
+  if(gateInit&&isLocked(id)){var pv=GATE[id]; toast('Trang này chưa mở: hãy hoàn thành ít nhất 70% ở trang trước (hiện đạt '+progOf(pv)+'%).'); return;}
   if(id==='t4'){var pm=document.getElementById('pMethod').value; var has=document.querySelectorAll('#tlBody tr:not(.tl-empty)').length>0; if(pm&&!has) refreshMethodDeps();}
   tabBtns.forEach(function(b){b.classList.toggle('active',b.dataset.tab===id);});
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id===id);});
@@ -850,8 +879,12 @@ function simUpdate(){
       wind=document.getElementById('simWindSel').value,
       time=document.getElementById('simTime').value,
       petal=document.getElementById('simPetal').value;
+  var simVals={simTemp:temp,simHum:hum,simLight:light,simWindSel:wind,simTime:time,simPetal:petal};
+  var chosenN=[temp,hum,light,wind,time,petal].filter(function(v){return v!=='';}).length;
+  var incomplete=chosenN<6;
   var r=simCompute(temp,hum,light,wind,time,petal);
   var moisture=r.moisture, color=r.color, mold=r.mold, shape=r.shape;
+  if(!incomplete){
   /* Thanh chỉ số */
   document.getElementById('simBarMoist').style.width=moisture+'%';
   document.getElementById('simValMoist').textContent=moisture+'%';
@@ -871,6 +904,16 @@ function simUpdate(){
   document.getElementById('simWind').setAttribute('opacity',wind==='good'?0.95:wind==='low'?0.4:0.08);
   var droop=moisture>=55?16:moisture>=35?7:0;
   document.getElementById('simFlower').setAttribute('transform','rotate('+droop+' 130 140)');
+  } else {
+    ['Moist','Color','Shape','Mold'].forEach(function(k){document.getElementById('simBar'+k).style.width='0%'; document.getElementById('simVal'+k).textContent='–';});
+    document.querySelectorAll('#simPetals .sp').forEach(function(pp){pp.setAttribute('fill','#ec4899');});
+    document.getElementById('simStem').setAttribute('stroke','#059669');
+    document.getElementById('simMold').setAttribute('opacity',0);
+    document.getElementById('simDrops').setAttribute('opacity',0);
+    document.getElementById('simSun').setAttribute('opacity',light===''?0.15:light==='dark'?0.06:light==='light'?0.45:1);
+    document.getElementById('simWind').setAttribute('opacity',wind===''?0.2:wind==='good'?0.95:wind==='low'?0.4:0.08);
+    document.getElementById('simFlower').setAttribute('transform','rotate(0 130 140)');
+  }
   /* Nhận xét theo từng điều kiện: mỗi điều kiện chỉ có 2 mức - tối ưu / chưa tối ưu */
   var COND=[
     ['simTemp','Nhiệt độ',temp==='warm','ấm vừa - nước bốc hơi đều, an toàn cho cánh hoa',temp==='cold'?'trời lạnh làm nước bốc hơi chậm, hoa lâu khô và dễ mốc':'nhiệt quá cao làm cánh cháy sẫm màu và giòn vụn'],
@@ -884,11 +927,13 @@ function simUpdate(){
   var box=document.getElementById('simVerdict'), title=document.getElementById('simVerdictTitle'), cap=document.getElementById('simCaption');
   var act=null; COND.forEach(function(c){if(c[0]===activeCond) act=c;});
   title.textContent='Kết quả dự đoán';
-  if(mold>=60||moisture>=62){box.className='sim-verdict bad'; cap.textContent='Hoa còn ướt, rũ xuống và bắt đầu mốc';}
+  if(incomplete){box.className='sim-verdict'; cap.textContent='Đã chọn '+chosenN+'/6 điều kiện - chọn đủ cả 6 điều kiện để xem hoa biến đổi';}
+  else if(mold>=60||moisture>=62){box.className='sim-verdict bad'; cap.textContent='Hoa còn ướt, rũ xuống và bắt đầu mốc';}
   else if(act&&act[2]){box.className='sim-verdict good'; cap.textContent='Hoa khô giòn, giữ màu và dáng đẹp';}
   else{box.className='sim-verdict mid'; cap.textContent=mold>=45?'Bắt đầu xuất hiện đốm mốc trên cánh':(color<70?'Hoa khô nhưng màu đã phai mạnh':'Hoa đang khô, cần điều chỉnh thêm');}
   var ul=document.getElementById('simFeedback'); ul.innerHTML='';
-  COND.forEach(function(c){if(c[0]!==activeCond) return; var li=document.createElement('li'); li.innerHTML='<b>'+c[1]+(c[2]?' - tối ưu':' - chưa tối ưu')+'</b>: '+(c[2]?c[3]:c[4]); ul.appendChild(li);});
+  if(simVals[activeCond]===''){var lbl=''; COND.forEach(function(c){if(c[0]===activeCond) lbl=c[1];}); var li0=document.createElement('li'); li0.innerHTML='<b>'+lbl+'</b>: chưa chọn - hãy chọn một giá trị ở ô chọn phía trên để xem điều kiện này làm hoa biến đổi thế nào.'; ul.appendChild(li0);}
+  else COND.forEach(function(c){if(c[0]!==activeCond) return; var li=document.createElement('li'); li.innerHTML='<b>'+c[1]+(c[2]?' - tối ưu':' - chưa tối ưu')+'</b>: '+(c[2]?c[3]:c[4]); ul.appendChild(li);});
 }
 ['simTemp','simHum','simLight','simWindSel','simTime','simPetal'].forEach(function(id){
   document.getElementById(id).addEventListener('change',simUpdate);
@@ -964,7 +1009,7 @@ document.getElementById('chHintBtn').addEventListener('click',function(){
 
 /* ---------- Method filter & expand ---------- */
 document.querySelectorAll('.method-head').forEach(function(h){
-  h.addEventListener('click',function(){h.parentElement.classList.toggle('open'); doneStep(2);});
+  h.addEventListener('click',function(){h.parentElement.classList.toggle('open'); if(h.parentElement.classList.contains('open')) viewedMethods[h.parentElement.id]=true; doneStep(2); saveAll();});
 });
 document.getElementById('m1').classList.add('open');
 document.querySelectorAll('#mfilter button').forEach(function(b){
@@ -1195,7 +1240,7 @@ function addObsRow(data){
   tr.innerHTML='<td><input type="text" class="o-date" placeholder="VD: Ngày 2 · 10/11 · 9h sáng"></td><td contenteditable="true" class="o-note"></td><td contenteditable="true" class="o-crisp"></td><td contenteditable="true" class="o-mold"></td><td><button class="btn ghost sm o-del" title="Xóa dòng">✕</button></td>';
   if(data){tr.querySelector('.o-date').value=data.d||''; tr.querySelector('.o-note').textContent=data.n||''; tr.querySelector('.o-crisp').textContent=data.c||''; tr.querySelector('.o-mold').textContent=data.m||'';}
   tr.querySelector('.o-del').addEventListener('click',function(){tr.remove(); saveAll();});
-  tb.appendChild(tr);
+  tb.appendChild(tr); updateGate();
 }
 document.getElementById('addObsBtn').addEventListener('click',function(){addObsRow();});
 
@@ -1224,6 +1269,7 @@ function gather(){
   g.cond=Array.prototype.map.call(document.querySelectorAll('.pcond'),function(c){return c.checked;});
   g.mat=Array.prototype.map.call(document.querySelectorAll('.pmat'),function(c){return c.checked;});
   g.safe=Array.prototype.map.call(document.querySelectorAll('.safe'),function(c){return c.checked;});
+  g.viewed=Object.keys(viewedMethods).filter(function(k){return viewedMethods[k];});
   g.timeline=Array.prototype.map.call(Array.prototype.filter.call(document.querySelectorAll('#tlBody tr'),function(tr){return !tr.classList.contains('tl-empty');}),function(tr){var tds=tr.querySelectorAll('td'); var who=tr.querySelector('.tl-who'); return [tds[0].textContent,tds[1].textContent,who?who.value:(tds[2]?tds[2].textContent:'')];});
   g.obs=Array.prototype.map.call(document.querySelectorAll('#obsTable tbody tr'),function(tr){return {d:tr.querySelector('.o-date').value,n:tr.querySelector('.o-note').textContent,c:tr.querySelector('.o-crisp').textContent,m:tr.querySelector('.o-mold').textContent,};});
   g.rb=[]; for(var i=0;i<5;i++){var el=document.querySelector('input[name="rb'+i+'"]:checked'); g.rb.push(el?el.value:'');}
@@ -1247,6 +1293,7 @@ function saveAll(){
   var has=document.getElementById('pGroup').value&&document.getElementById('pMethod').value;
   if(has){doneStep(4); state.planSaved=true;}
   document.getElementById('planStatus').textContent=' Đã tự lưu trên trình duyệt này lúc '+new Date().toLocaleTimeString('vi-VN');
+  updateGate();
 }
 function setRadio(name,val){
   if(!val) return;
@@ -1267,10 +1314,11 @@ function loadAll(){
   var raw; try{raw=localStorage.getItem(STORE);}catch(e){}
   // defaults first
   refreshMethodDeps(); addObsRow(); addObsRow();
-  if(!raw){loading=false; return;}
+  if(!raw){loading=false; updateGate(); gateInit=true; return;}
   var g; try{g=JSON.parse(raw);}catch(e){loading=false; return;}
   ['pGroup','pClass','pMembers','pFlower','pStart','pMethod','pReason','pPlace','pMatExtra','pPredict','pSuccess','pRisk','r1','r2','r3','predFlower','predColorNow','predColorAfter','predShape','predWhy'].forEach(function(id){if(g[id]!=null) document.getElementById(id).value=g[id];});
   refreshMethodDeps();
+  if(g.viewed) g.viewed.forEach(function(id){viewedMethods[id]=true;});
   if(g.safe) document.querySelectorAll('.safe').forEach(function(c,i){if(g.safe[i])c.checked=true;});
   if(g.timeline&&g.timeline.length){
     var tb=document.getElementById('tlBody'); tb.innerHTML='';
@@ -1291,7 +1339,9 @@ function loadAll(){
   chHintGate();
   if(g.pGroup&&g.pMethod) doneStep(4);
   loading=false;
+  updateGate();
   if(g.tab&&g.tab!=='t1'){goTab(g.tab);}
+  gateInit=true;
   document.getElementById('planStatus').textContent=' Đã khôi phục nội dung đã lưu trên trình duyệt này';
 }
 /* Lưu bằng ủy quyền sự kiện ở cấp document: bắt được cả ô được tạo động
