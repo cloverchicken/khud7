@@ -179,23 +179,10 @@ figure.ev figcaption .src{display:block;margin-top:5px;font-size:.74rem;color:va
 .lang-btn b{color:var(--teal-dark)}
 /* Hint text inside textareas/inputs matches the question-label size (.fl = .83rem) */
 textarea::placeholder,input::placeholder{font-size:.83rem;line-height:1.45}
-/* Fixed PDF export button — visible on every tab, bottom-right corner */
-.pdf-fab{position:fixed;right:16px;bottom:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:90;display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#fff;border:none;border-radius:999px;padding:12px 18px;font-weight:700;font-size:.92rem;line-height:1;min-height:48px;box-shadow:0 6px 20px rgba(0,0,0,.22);cursor:pointer}
-.pdf-fab:active{transform:translateY(1px)}
-@media (prefers-color-scheme: dark){.pdf-fab{color:#06231D}}
-@media(max-width:560px){.pdf-fab{right:12px;bottom:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:11px 15px;font-size:.88rem}}
-.pdf-fab:disabled{opacity:.65;cursor:wait}
-.pdf-toast{position:fixed;right:16px;bottom:76px;z-index:91;max-width:min(92vw,380px);background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.86rem;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none}
-.pdf-toast.show{display:block}
-/* While the PDF is being generated: show every tab's content, hide controls */
-body.pdf-export section.panel{display:block!important}
-body.pdf-export .freeze-head{position:static}
-body.pdf-export nav.tabs,body.pdf-export .btn-row,body.pdf-export .done-btn,body.pdf-export .check-list button,body.pdf-export .pdf-fab,body.pdf-export .pdf-toast{display:none!important}
-body.pdf-export .card,body.pdf-export .lesson{break-inside:avoid}
 /* data table */
 td input,td select{min-height:38px;padding:5px 7px;font-size:.88rem}
 .chart-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;margin-top:8px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.72rem;margin-top:8px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 /* rubric */
 .rub-row{border:1.5px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;margin-bottom:10px;background:var(--surface)}
@@ -235,7 +222,7 @@ footer.note{margin-top:26px;font-size:.82rem;color:var(--muted);border-top:1px s
 .stance{font-weight:700}
 .journal-head{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .journal-head>div{flex:1;min-width:180px}
-@media print{.freeze-head{position:static}nav.tabs,.btn-row,.done-btn,.check-list button,.pdf-fab{display:none!important}section.panel{display:block!important}.card,.lesson{break-inside:avoid}}
+@media print{.freeze-head{position:static}nav.tabs,.btn-row,.done-btn,.check-list button{display:none!important}section.panel{display:block!important}.card,.lesson{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -696,9 +683,6 @@ footer.note{margin-top:26px;font-size:.82rem;color:var(--muted);border-top:1px s
   </footer>
 </div>
 
-<button class="pdf-fab" id="btnExportPdf" type="button" aria-label="Xuất PDF">📄 Xuất PDF</button>
-<div class="pdf-toast" id="pdfToast" role="status" aria-live="polite"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 "use strict";
@@ -719,54 +703,6 @@ function goTab(id){
   document.getElementById(id).classList.add("active");
   window.scrollTo({top:0, behavior:"smooth"});
 }
-
-/* Fixed PDF export button (all tabs) — generates and downloads a real PDF of the
-   full portfolio in-page (every tab's content), so it works inside the app frame too */
-var btnExportPdfEl = document.getElementById("btnExportPdf");
-if(btnExportPdfEl) btnExportPdfEl.addEventListener("click", function(){
-  var isEn = (typeof curLang !== "undefined" && curLang === "en");
-  var toast = document.getElementById("pdfToast");
-  function showToast(msg){
-    if(!toast) return;
-    toast.textContent = msg;
-    toast.classList.add("show");
-    setTimeout(function(){ toast.classList.remove("show"); }, 7000);
-  }
-  if(typeof html2pdf === "undefined"){
-    showToast(isEn
-      ? "PDF export needs an internet connection to load the PDF library. Check the connection and tap the button again."
-      : "Xuất PDF cần kết nối mạng để tải thư viện PDF. Hãy kiểm tra kết nối rồi bấm nút Xuất PDF lại nhé.");
-    return;
-  }
-  var wasText = btnExportPdfEl.textContent;
-  btnExportPdfEl.disabled = true;
-  btnExportPdfEl.textContent = isEn ? "⏳ Creating PDF…" : "⏳ Đang tạo PDF…";
-  document.body.classList.add("pdf-export");
-  function finish(){
-    document.body.classList.remove("pdf-export");
-    btnExportPdfEl.disabled = false;
-    btnExportPdfEl.textContent = wasText;
-  }
-  var opt = {
-    margin: 8,
-    filename: "ho-so-loc-nuoc-khoi8.pdf",
-    image: {type:"jpeg", quality:0.95},
-    html2canvas: {scale:2, useCORS:true, logging:false},
-    jsPDF: {unit:"mm", format:"a4", orientation:"portrait"},
-    pagebreak: {mode:["css","legacy"]}
-  };
-  try{
-    html2pdf().set(opt).from(document.querySelector(".wrap")).save()
-      .then(function(){ finish(); })
-      .catch(function(){
-        finish();
-        showToast(isEn ? "Could not create the PDF — please tap the button again." : "Chưa tạo được PDF — nhóm thử bấm nút Xuất PDF lại nhé.");
-      });
-  }catch(e){
-    finish();
-    showToast(isEn ? "Could not create the PDF — please tap the button again." : "Chưa tạo được PDF — nhóm thử bấm nút Xuất PDF lại nhé.");
-  }
-});
 
 /* Tab Lộ trình đã bỏ — doneLessons chỉ giữ để tương thích dữ liệu đã lưu */
 var doneLessons = {};
@@ -1261,7 +1197,7 @@ function drawChart(av){
   for(var v=0; v<=4; v++){
     var y = base - (v/maxV)*(base-top);
     s += '<line x1="38" y1="'+y+'" x2="348" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>';
-    s += '<text x="30" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="var(--muted)">'+v+'</text>';
+    s += '<text x="30" y="'+(y+3)+'" text-anchor="end" font-size="8" fill="var(--muted)">'+v+'</text>';
   }
   /* threshold line at 2 */
   var y2 = base - (2/maxV)*(base-top);
@@ -1275,14 +1211,14 @@ function drawChart(av){
     s += '<rect x="'+(cx-32)+'" y="'+(base-bH)+'" width="28" height="'+bH+'" rx="3" fill="var(--sand)" opacity="'+(a?1:0.25)+'"/>';
     s += '<rect x="'+(cx+4)+'" y="'+(base-aH)+'" width="28" height="'+aH+'" rx="3" fill="var(--teal)" opacity="'+(a?1:0.25)+'"/>';
     if(a){
-      s += '<text x="'+(cx-18)+'" y="'+(base-bH-5)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">'+a.before.toFixed(1).replace(".",",")+'</text>';
-      s += '<text x="'+(cx+18)+'" y="'+(base-aH-5)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">'+a.after.toFixed(1).replace(".",",")+'</text>';
+      s += '<text x="'+(cx-18)+'" y="'+(base-bH-5)+'" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--ink)">'+a.before.toFixed(1).replace(".",",")+'</text>';
+      s += '<text x="'+(cx+18)+'" y="'+(base-aH-5)+'" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--ink)">'+a.after.toFixed(1).replace(".",",")+'</text>';
     } else {
-      s += '<text x="'+cx+'" y="'+(base-8)+'" text-anchor="middle" font-size="10" fill="var(--muted)">chưa đo</text>';
+      s += '<text x="'+cx+'" y="'+(base-8)+'" text-anchor="middle" font-size="8" fill="var(--muted)">chưa đo</text>';
     }
-    s += '<text x="'+cx+'" y="'+(base+18)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="'+(bd===d ? "var(--teal-dark)" : "var(--ink)")+'">'+d+(bd===d ? " ★" : "")+'</text>';
+    s += '<text x="'+cx+'" y="'+(base+18)+'" text-anchor="middle" font-size="9" font-weight="700" fill="'+(bd===d ? "var(--teal-dark)" : "var(--ink)")+'">'+d+(bd===d ? " ★" : "")+'</text>';
   });
-  s += '<text x="12" y="120" font-size="10" fill="var(--muted)" transform="rotate(-90 12 120)" text-anchor="middle">Độ đục (0–4)</text>';
+  s += '<text x="12" y="120" font-size="8" fill="var(--muted)" transform="rotate(-90 12 120)" text-anchor="middle">Độ đục (0–4)</text>';
   svg.innerHTML = s;
 }
 function downloadCSV(filename, text){
@@ -2069,7 +2005,6 @@ var I18N_EN = {
 "— lọc cơ học không diệt được vi khuẩn và virus. Luôn đeo găng khi xử lý mẫu nước đục, không nếm/ngửi trực tiếp, rửa tay sau mỗi buổi thực hành.":"— mechanical filtration does not kill bacteria or viruses. Always wear gloves when handling turbid water samples, never taste or smell them directly, and wash your hands after every practical session.",
 "Họ và tên học sinh":"Student's full name",
 "Nhóm":"Group",
-"📄 Xuất PDF":"📄 Export PDF",
 "Vấn đề xã hội":"Social Issue",
 "Nguyên lý hoạt động":"How It Works",
 "Thiết kế":"Design",
